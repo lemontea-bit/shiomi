@@ -18,6 +18,9 @@ function loadInitial(): StoredState {
   const stored = loadJSON<StoredState>(KEY);
   if (!stored?.spots?.length) return defaultState();
   if (stored.active == null || stored.active >= stored.spots.length) stored.active = 0;
+  // Migrate spots saved before `kind` existed (the 海/湖/川 toggle era) — default to 'sea'
+  // rather than crash on an undefined lookup.
+  stored.spots = stored.spots.map((s) => (s.kind ? s : { ...s, kind: 'sea' }));
   return stored;
 }
 

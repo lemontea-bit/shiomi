@@ -1,4 +1,5 @@
 import type { Spot } from '../types';
+import { FIELD_META } from '../data/fieldMeta';
 
 export function SpotPicker({
   spots,
@@ -18,7 +19,7 @@ export function SpotPicker({
       {spots.map((s, i) => {
         const on = i === active;
         return (
-          <div key={s.short} style={{ position: 'relative', flex: '1 1 80px' }}>
+          <div key={`${i}-${s.name}`} style={{ position: 'relative', flex: '1 1 80px' }}>
             <button
               onClick={() => onPick(i)}
               style={{
@@ -26,7 +27,12 @@ export function SpotPicker({
                 background: on ? 'rgba(217,130,42,.12)' : '#FFFBF4', border: `1px solid ${on ? 'rgba(217,130,42,.3)' : 'rgba(43,32,22,.1)'}`,
               }}
             >
-              <div style={{ font: "500 11px/1.3 'Zen Kaku Gothic New',sans-serif", color: on ? 'var(--amber)' : 'rgba(43,32,22,.6)', paddingRight: spots.length > 1 ? 14 : 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{s.short}</div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 5, paddingRight: spots.length > 1 ? 14 : 0, minWidth: 0 }}>
+                <div style={{ font: "500 11px/1.3 'Zen Kaku Gothic New',sans-serif", color: on ? 'var(--amber)' : 'rgba(43,32,22,.6)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{s.short}</div>
+                <div style={{ font: "700 9px/1 'Zen Kaku Gothic New',sans-serif", color: 'var(--teal)', background: 'rgba(47,133,119,.12)', borderRadius: 99, padding: '2px 5px', flex: 'none' }}>
+                  {FIELD_META[s.kind].label.slice(0, 1)}
+                </div>
+              </div>
               <div style={{ font: "700 15px/1 'JetBrains Mono',monospace", color: on ? 'var(--amber)' : 'rgba(43,32,22,.6)' }}>{scores[i]}</div>
             </button>
             {spots.length > 1 && (
