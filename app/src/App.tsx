@@ -83,7 +83,7 @@ export default function App() {
 
   if (!snap) {
     return (
-      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(234,242,244,.5)', font: "500 13px/1 'Zen Kaku Gothic New',sans-serif" }}>
+      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(43,32,22,.5)', font: "500 13px/1 'Zen Kaku Gothic New',sans-serif" }}>
         天気を取得しています…
       </div>
     );
@@ -98,7 +98,7 @@ export default function App() {
         <div
           style={{
             margin: '0 20px 12px', textAlign: 'center', flex: 'none',
-            font: "500 10px/1.6 'Zen Kaku Gothic New',sans-serif", color: 'rgba(234,242,244,.5)', background: 'rgba(15,31,38,.9)', border: '1px solid rgba(140,190,200,.16)',
+            font: "500 10px/1.6 'Zen Kaku Gothic New',sans-serif", color: 'rgba(43,32,22,.6)', background: 'rgba(255,251,244,.92)', border: '1px solid rgba(43,32,22,.16)',
             borderRadius: 10, padding: '6px 10px',
           }}
         >

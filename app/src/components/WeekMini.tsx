@@ -6,7 +6,7 @@ export function WeekMini({ days, onOpen }: { days: DayRowData[]; onOpen: () => v
   return (
     <div
       onClick={onOpen}
-      style={{ borderRadius: 18, background: '#101F26', border: '1px solid rgba(140,190,200,.12)', padding: '14px 14px 12px', cursor: 'pointer', display: 'flex', flexDirection: 'column', gap: 12 }}
+      style={{ borderRadius: 18, background: '#FFFBF4', border: '1px solid rgba(43,32,22,.12)', padding: '14px 14px 12px', cursor: 'pointer', display: 'flex', flexDirection: 'column', gap: 12 }}
     >
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div style={{ font: "700 13px/1 'Zen Kaku Gothic New',sans-serif" }}>週間</div>
@@ -17,9 +17,9 @@ export function WeekMini({ days, onOpen }: { days: DayRowData[]; onOpen: () => v
           const color = scoreColor(d.score);
           return (
             <div key={d.iso} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 7 }}>
-              <div style={{ font: "500 10px/1 'JetBrains Mono',monospace", color: d.dow === 'SUN' ? 'var(--danger)' : d.dow === 'SAT' ? 'var(--info)' : 'rgba(234,242,244,.45)' }}>{d.dow}</div>
+              <div style={{ font: "500 10px/1 'JetBrains Mono',monospace", color: d.dow === 'SUN' ? 'var(--danger)' : d.dow === 'SAT' ? 'var(--info)' : 'rgba(43,32,22,.45)' }}>{d.dow}</div>
               <WxIcon kind={d.icon} size={22} />
-              <div style={{ font: "500 10px/1 'JetBrains Mono',monospace", color: 'rgba(234,242,244,.75)' }}>{d.hi}</div>
+              <div style={{ font: "500 10px/1 'JetBrains Mono',monospace", color: 'rgba(43,32,22,.75)' }}>{d.hi}</div>
               <div style={{ width: 22, height: 4, borderRadius: 99, background: color }} />
               <div style={{ font: "700 10px/1 'JetBrains Mono',monospace", color }}>{d.score}</div>
             </div>
