@@ -12,6 +12,7 @@ export function HomeTab({
   spotScores,
   spotIndex,
   onPickSpot,
+  onRemoveSpot,
   showBreak,
   onToggleBreak,
   onCycleWindUnit,
@@ -22,6 +23,7 @@ export function HomeTab({
   spotScores: number[];
   spotIndex: number;
   onPickSpot: (i: number) => void;
+  onRemoveSpot: (i: number) => void;
   showBreak: boolean;
   onToggleBreak: () => void;
   onCycleWindUnit: () => void;
@@ -39,7 +41,7 @@ export function HomeTab({
         showBreak={showBreak}
         onToggle={onToggleBreak}
       />
-      <SpotPicker spots={spots} active={spotIndex} scores={spotScores} onPick={onPickSpot} />
+      <SpotPicker spots={spots} active={spotIndex} scores={spotScores} onPick={onPickSpot} onRemove={onRemoveSpot} />
       <NowWeatherGrid stats={snap.nowStats} weatherLabel={snap.weatherLabel} weatherKind={snap.weatherKind} onCycleWindUnit={onCycleWindUnit} source={snap.weatherSource === 'live' ? 'live' : 'simulated'} />
       <GoodWindows windows={snap.windows} />
       <WeekMini days={snap.days} onOpen={() => onGoTab('week')} />

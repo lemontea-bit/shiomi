@@ -1,7 +1,7 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
-import type { CustomLocation, Field, Tab, WindUnit } from './types';
-import { SPOTS_BY_FIELD, customLocationToSpot } from './data/spots';
-import { useGeolocation, nearestIndex } from './lib/geo';
+import { useEffect, useMemo, useState } from 'react';
+import type { Field, Tab, WindUnit } from './types';
+import { customLocationToSpot } from './data/spots';
+import { useSavedSpots } from './lib/spotsStore';
 import { useWeather } from './lib/weather';
 import { useClock } from './lib/clock';
 import { buildSnapshot, adjustFish } from './lib/engine';
@@ -20,11 +20,6 @@ const NEXT_WIND_UNIT: Record<WindUnit, WindUnit> = { 'm/s': 'kt', kt: 'km/h', 'k
 
 export default function App() {
   const [field, setField] = useState<Field>('sea');
-  const [spotByField, setSpotByField] = useState<Record<Field, number>>({ sea: 0, lake: 0, river: 0 });
-  const [customLocation, setCustomLocation] = useState<CustomLocation | null>(null);
-  // Global, not per-field: once a searched place is active it stays active across the
-  // 海/湖/川 switcher too — it only turns off when you tap back to one of the 3 curated spots.
-  const [customActive, setCustomActive] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [tab, setTab] = useState<Tab>('home');
   const [showBreak, setShowBreak] = useState(false);
@@ -32,27 +27,12 @@ export default function App() {
   const [openDay, setOpenDay] = useState(-1);
   const [openFish, setOpenFish] = useState<number | null>(null);
   const [windUnit, setWindUnit] = useState<WindUnit>('m/s');
-  const manualSpotRef = useRef(false);
 
-  const fallbackCoords = { lat: SPOTS_BY_FIELD.sea[0].lat, lon: SPOTS_BY_FIELD.sea[0].lon };
-  const geo = useGeolocation(fallbackCoords);
-
-  // Auto-pick the nearest preset spot in every field once we know where the user actually
-  // is — unless they've already picked a spot, or searched a place, themselves.
-  useEffect(() => {
-    if (geo.status !== 'granted' || manualSpotRef.current) return;
-    setSpotByField({
-      sea: nearestIndex(geo.coords, SPOTS_BY_FIELD.sea),
-      lake: nearestIndex(geo.coords, SPOTS_BY_FIELD.lake),
-      river: nearestIndex(geo.coords, SPOTS_BY_FIELD.river),
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [geo.status]);
-
-  const presetSpots = SPOTS_BY_FIELD[field];
-  const customSpot = useMemo(() => (customLocation ? customLocationToSpot(customLocation, field) : null), [customLocation, field]);
-  const spots = useMemo(() => (customSpot ? [...presetSpots, customSpot] : presetSpots), [presetSpots, customSpot]);
-  const spotIndex = customActive && customSpot ? presetSpots.length : Math.min(spotByField[field], presetSpots.length - 1);
+  // No GPS auto-detection — a per-field list you build yourself (seeded with 3 curated
+  // spots), persisted to this browser. See lib/spotsStore.ts.
+  const saved = useSavedSpots();
+  const spots = saved.spots[field];
+  const spotIndex = Math.min(saved.active[field], spots.length - 1);
   const spot = spots[spotIndex];
 
   const { data: weather, status: weatherStatus } = useWeather({ lat: spot.lat, lon: spot.lon });
@@ -64,7 +44,7 @@ export default function App() {
   }, [field, spot, weather, windUnit, now]);
 
   // Scores for the spot picker on the home tab (each needs its own snapshot's hero score).
-  const [spotScores, setSpotScores] = useState<number[]>([0, 0, 0]);
+  const [spotScores, setSpotScores] = useState<number[]>([]);
   useEffect(() => {
     if (!weather || !snap) return;
     // Cheap approximation: reuse this spot's live weather for the sibling spots' scores too
@@ -77,7 +57,7 @@ export default function App() {
       })
     );
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [field, spotIndex, weather, snap?.heroScore, windUnit, customSpot]);
+  }, [field, spotIndex, spots, weather, snap?.heroScore, windUnit]);
 
   const fishes = useMemo(() => (snap ? adjustFish(field, snap.liveDelta) : []), [field, snap]);
 
@@ -90,19 +70,13 @@ export default function App() {
     setOpenFish(null);
   };
   const pickSpot = (i: number) => {
-    manualSpotRef.current = true;
-    if (customSpot && i === presetSpots.length) {
-      setCustomActive(true);
-    } else {
-      setCustomActive(false);
-      setSpotByField((prev) => ({ ...prev, [field]: i }));
-    }
+    saved.selectSpot(field, i);
     setOpenFish(null);
   };
+  const removeSpot = (i: number) => saved.removeSpot(field, i);
   const pickPlace = (r: GeocodeResult) => {
-    manualSpotRef.current = true;
-    setCustomLocation({ name: r.name, admin1: r.admin1, admin2: r.admin2, lat: r.lat, lon: r.lon });
-    setCustomActive(true);
+    const newSpot = customLocationToSpot({ name: r.name, admin1: r.admin1, admin2: r.admin2, lat: r.lat, lon: r.lon }, field);
+    saved.addSpot(field, newSpot);
     setOpenFish(null);
     setSearchOpen(false);
   };
@@ -117,7 +91,7 @@ export default function App() {
 
   return (
     <div style={{ minHeight: '100dvh', display: 'flex', flexDirection: 'column', background: 'var(--bg)', color: 'var(--ink)', position: 'relative', overflow: 'hidden' }}>
-      <Header spot={spot} geoStatus={geo.status} onOpenSearch={() => setSearchOpen(true)} />
+      <Header spot={spot} onOpenSearch={() => setSearchOpen(true)} />
       <FieldSwitcher field={field} onPick={pickField} />
 
       {weatherStatus === 'simulated' && (
@@ -140,6 +114,7 @@ export default function App() {
             spotScores={spotScores}
             spotIndex={spotIndex}
             onPickSpot={pickSpot}
+            onRemoveSpot={removeSpot}
             showBreak={showBreak}
             onToggleBreak={() => setShowBreak((v) => !v)}
             onCycleWindUnit={() => setWindUnit((u) => NEXT_WIND_UNIT[u])}
