@@ -1,0 +1,13 @@
+{
+  "name": "潮見 SHIOMI — 釣果天気予報",
+  "short_name": "潮見 SHIOMI",
+  "description": "週間天気・時間別の降水確率と風速、周辺で釣れる魚の確率を自動計算する釣り天気アプリ",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0B1418",
+  "theme_color": "#0B1418",
+  "lang": "ja",
+  "icons": [
+    { "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}

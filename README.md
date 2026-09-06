@@ -1,5 +1,8 @@
 # CODING AGENTS: READ THIS FIRST
 
+> **Implementation status:** built — see [`app/`](./app) (React + Vite) and its
+> [README](./app/README.md) for what was built, what's live vs. modeled, and how to run it.
+
 This is a **handoff bundle** from Claude Design (claude.ai/design).
 
 A user mocked up designs in HTML/CSS/JS using an AI design tool, then exported this bundle so a coding agent can implement the designs for real.
