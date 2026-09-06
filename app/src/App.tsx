@@ -22,7 +22,9 @@ export default function App() {
   const [field, setField] = useState<Field>('sea');
   const [spotByField, setSpotByField] = useState<Record<Field, number>>({ sea: 0, lake: 0, river: 0 });
   const [customLocation, setCustomLocation] = useState<CustomLocation | null>(null);
-  const [customActive, setCustomActive] = useState<Record<Field, boolean>>({ sea: false, lake: false, river: false });
+  // Global, not per-field: once a searched place is active it stays active across the
+  // 海/湖/川 switcher too — it only turns off when you tap back to one of the 3 curated spots.
+  const [customActive, setCustomActive] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [tab, setTab] = useState<Tab>('home');
   const [showBreak, setShowBreak] = useState(false);
@@ -50,7 +52,7 @@ export default function App() {
   const presetSpots = SPOTS_BY_FIELD[field];
   const customSpot = useMemo(() => (customLocation ? customLocationToSpot(customLocation, field) : null), [customLocation, field]);
   const spots = useMemo(() => (customSpot ? [...presetSpots, customSpot] : presetSpots), [presetSpots, customSpot]);
-  const spotIndex = customActive[field] && customSpot ? presetSpots.length : Math.min(spotByField[field], presetSpots.length - 1);
+  const spotIndex = customActive && customSpot ? presetSpots.length : Math.min(spotByField[field], presetSpots.length - 1);
   const spot = spots[spotIndex];
 
   const { data: weather, status: weatherStatus } = useWeather({ lat: spot.lat, lon: spot.lon });
@@ -90,9 +92,9 @@ export default function App() {
   const pickSpot = (i: number) => {
     manualSpotRef.current = true;
     if (customSpot && i === presetSpots.length) {
-      setCustomActive((prev) => ({ ...prev, [field]: true }));
+      setCustomActive(true);
     } else {
-      setCustomActive((prev) => ({ ...prev, [field]: false }));
+      setCustomActive(false);
       setSpotByField((prev) => ({ ...prev, [field]: i }));
     }
     setOpenFish(null);
@@ -100,7 +102,7 @@ export default function App() {
   const pickPlace = (r: GeocodeResult) => {
     manualSpotRef.current = true;
     setCustomLocation({ name: r.name, admin1: r.admin1, admin2: r.admin2, lat: r.lat, lon: r.lon });
-    setCustomActive((prev) => ({ ...prev, [field]: true }));
+    setCustomActive(true);
     setOpenFish(null);
     setSearchOpen(false);
   };
