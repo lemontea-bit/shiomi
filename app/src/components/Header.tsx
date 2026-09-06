@@ -1,10 +1,8 @@
 import type { Spot } from '../types';
-import type { GeoStatus } from '../lib/geo';
 import { formatHeaderTime, useClock } from '../lib/clock';
 
-export function Header({ spot, geoStatus, onOpenSearch }: { spot: Spot; geoStatus: GeoStatus; onOpenSearch: () => void }) {
+export function Header({ spot, onOpenSearch }: { spot: Spot; onOpenSearch: () => void }) {
   const now = useClock();
-  const gps = geoStatus === 'granted' ? { text: 'GPS 更新済', color: 'var(--teal)' } : geoStatus === 'locating' ? { text: '位置情報 取得中…', color: 'rgba(234,242,244,.4)' } : { text: 'サンプル位置', color: 'rgba(234,242,244,.4)' };
 
   return (
     <div style={{ padding: '20px 20px 12px', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, flex: 'none' }}>
@@ -16,10 +14,7 @@ export function Header({ spot, geoStatus, onOpenSearch }: { spot: Spot; geoStatu
         </div>
         <div style={{ font: "400 11px/1.3 'JetBrains Mono',monospace", color: 'rgba(234,242,244,.45)', letterSpacing: '.04em' }}>{spot.meta}</div>
       </button>
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4, flex: 'none' }}>
-        <div style={{ font: "500 11px/1 'JetBrains Mono',monospace", color: 'rgba(234,242,244,.4)' }}>{formatHeaderTime(now)}</div>
-        <div style={{ font: "500 10px/1 'JetBrains Mono',monospace", color: gps.color, letterSpacing: '.08em' }}>{gps.text}</div>
-      </div>
+      <div style={{ font: "500 11px/1 'JetBrains Mono',monospace", color: 'rgba(234,242,244,.4)', flex: 'none', paddingTop: 2 }}>{formatHeaderTime(now)}</div>
     </div>
   );
 }

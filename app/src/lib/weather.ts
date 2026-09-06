@@ -1,6 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
-import type { Coords } from './geo';
 import { seededRange } from './hash';
+
+export interface Coords {
+  lat: number;
+  lon: number;
+}
 
 export interface WeatherHour {
   iso: string;

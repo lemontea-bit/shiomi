@@ -15,13 +15,19 @@ original prototype this was built from).
 - Four tabs: **ホーム** (today's score + current conditions), **時間ごと**
   (hour-by-hour, 18h out, with a tide/level/flow chart), **週間** (7-day), and
   **釣れる魚** (per-species bite probability with a tackle/technique sheet).
+- Per-field spot list is a user-editable, `localStorage`-persisted set (seeded
+  with 3 curated spots each) — tap the location name in the header to search
+  any 都道府県・市区町村・地名 in Japan (lib/geocode.ts, Open-Meteo's free
+  geocoding API + a small curated fallback for well-known lakes it tends to
+  miss) and register it, or tap a spot's **×** to remove it. There is
+  deliberately no GPS/geolocation auto-detection — it only ever "worked" for
+  the 3 original Kanagawa-area spots, and searching covers all of Japan.
 
 ## Live data vs. estimates — read this before trusting a number
 
 Temperature, precipitation probability, wind speed/direction and pressure are
-fetched live from [Open-Meteo](https://open-meteo.com/) (no API key needed) for
-whichever spot is selected, with browser geolocation used once on load to
-auto-pick the nearest spot in each field.
+fetched live from [Open-Meteo](https://open-meteo.com/) (no API key needed)
+for whichever spot is selected.
 
 There is no free public API for real tide tables or river/lake gauge data, so
 tide state, lake level and river flow are **modeled, not measured**:
@@ -74,8 +80,8 @@ https://<github-username>.github.io/shiomi/
 ```
 
 That's a real hosted origin (unlike a sandboxed Artifact preview), so live
-weather and geolocation work normally there — open it on a phone and use
-"Add to Home Screen" to install it like an app.
+weather and the geocoding search work normally there — open it on a phone
+and use "Add to Home Screen" to install it like an app.
 
 The build's `base` path (`vite.config.ts`) is set to `/shiomi/` to match a
 GitHub Pages *project* site (`username.github.io/shiomi/`) — if the repo is
@@ -95,7 +101,8 @@ src/
   types.ts            shared types
   data/                authored sample content (spots, fish, field metadata)
   lib/
-    geo.ts             geolocation + nearest-spot
+    geocode.ts         place search (Open-Meteo geocoding + known-waters fallback)
+    spotsStore.ts      per-field saved-spot list, persisted to localStorage
     weather.ts         Open-Meteo client, types, simulated fallback
     tide.ts            tide / lake level / river flow models
     engine.ts          combines weather + models into the score & every
