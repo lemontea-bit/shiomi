@@ -212,24 +212,37 @@ export function useWeather(coords: Coords) {
       setStatus(cached.source);
       return;
     }
+    // `cancelled` (not the AbortController) is what gates the fallback: cleanup aborts the
+    // fetch AND sets `cancelled` so we skip state updates on a stale/unmounted effect, while
+    // our own watchdog timeout also aborts the fetch but leaves `cancelled` false so a hung
+    // or silently-blocked request (e.g. a sandboxed host with no network access) still falls
+    // through to the simulated forecast instead of leaving the app stuck on "loading" forever.
+    let cancelled = false;
     const controller = new AbortController();
+    const watchdog = setTimeout(() => controller.abort(), 7000);
     setStatus('loading');
     fetchLive(coords, controller.signal)
       .then((d) => {
+        if (cancelled) return;
         cache.current.set(key, d);
         setData(d);
         setStatus('live');
       })
       .catch((err) => {
-        if (controller.signal.aborted) return;
+        if (cancelled) return;
         const d = simulateWeather(coords, new Date());
         cache.current.set(key, d);
         setData(d);
         setStatus('simulated');
         // eslint-disable-next-line no-console
         console.warn('[shiomi] live weather unavailable, using simulated fallback:', err);
-      });
-    return () => controller.abort();
+      })
+      .finally(() => clearTimeout(watchdog));
+    return () => {
+      cancelled = true;
+      controller.abort();
+      clearTimeout(watchdog);
+    };
     // Depend on the primitive lat/lon, not `coords` itself — callers pass a fresh object
     // literal each render, which would otherwise refetch every render.
     // eslint-disable-next-line react-hooks/exhaustive-deps
