@@ -1,29 +1,18 @@
 import type { Snapshot } from '../lib/engine';
-import type { Spot, Tab } from '../types';
+import type { Tab } from '../types';
 import { ScoreCard } from './ScoreCard';
-import { SpotPicker } from './SpotPicker';
 import { NowWeatherGrid } from './NowWeatherGrid';
 import { GoodWindows } from './GoodWindows';
 import { WeekMini } from './WeekMini';
 
 export function HomeTab({
   snap,
-  spots,
-  spotScores,
-  spotIndex,
-  onPickSpot,
-  onRemoveSpot,
   showBreak,
   onToggleBreak,
   onCycleWindUnit,
   onGoTab,
 }: {
   snap: Snapshot;
-  spots: Spot[];
-  spotScores: number[];
-  spotIndex: number;
-  onPickSpot: (i: number) => void;
-  onRemoveSpot: (i: number) => void;
   showBreak: boolean;
   onToggleBreak: () => void;
   onCycleWindUnit: () => void;
@@ -41,7 +30,6 @@ export function HomeTab({
         showBreak={showBreak}
         onToggle={onToggleBreak}
       />
-      <SpotPicker spots={spots} active={spotIndex} scores={spotScores} onPick={onPickSpot} onRemove={onRemoveSpot} />
       <NowWeatherGrid stats={snap.nowStats} weatherLabel={snap.weatherLabel} weatherKind={snap.weatherKind} onCycleWindUnit={onCycleWindUnit} source={snap.weatherSource === 'live' ? 'live' : 'simulated'} />
       <GoodWindows windows={snap.windows} />
       <WeekMini days={snap.days} onOpen={() => onGoTab('week')} />

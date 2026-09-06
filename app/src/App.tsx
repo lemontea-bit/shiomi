@@ -8,6 +8,7 @@ import { buildSnapshot, adjustFish } from './lib/engine';
 import type { GeocodeResult } from './lib/geocode';
 import { Header } from './components/Header';
 import { FieldSwitcher } from './components/FieldSwitcher';
+import { SpotPicker } from './components/SpotPicker';
 import { TabBar } from './components/TabBar';
 import { HomeTab } from './components/HomeTab';
 import { HoursTab } from './components/HoursTab';
@@ -28,11 +29,13 @@ export default function App() {
   const [openFish, setOpenFish] = useState<number | null>(null);
   const [windUnit, setWindUnit] = useState<WindUnit>('m/s');
 
-  // No GPS auto-detection — a per-field list you build yourself (seeded with 3 curated
-  // spots), persisted to this browser. See lib/spotsStore.ts.
+  // One shared, persisted (localStorage) spot list — not one per field. A spot is just a
+  // place; 海/湖/川 only changes which scoring lens/species list is applied to whichever
+  // spot is currently selected, so switching it never changes the selection. No GPS
+  // auto-detection either. See lib/spotsStore.ts.
   const saved = useSavedSpots();
-  const spots = saved.spots[field];
-  const spotIndex = Math.min(saved.active[field], spots.length - 1);
+  const spots = saved.spots;
+  const spotIndex = Math.min(saved.active, spots.length - 1);
   const spot = spots[spotIndex];
 
   const { data: weather, status: weatherStatus } = useWeather({ lat: spot.lat, lon: spot.lon });
@@ -43,7 +46,8 @@ export default function App() {
     return buildSnapshot({ field, spot, weather, windUnit, now });
   }, [field, spot, weather, windUnit, now]);
 
-  // Scores for the spot picker on the home tab (each needs its own snapshot's hero score).
+  // Scores for the spot picker (each needs its own snapshot's hero score, under the
+  // currently active field's lens).
   const [spotScores, setSpotScores] = useState<number[]>([]);
   useEffect(() => {
     if (!weather || !snap) return;
@@ -63,20 +67,19 @@ export default function App() {
 
   const pickField = (f: Field) => {
     setField(f);
-    setTab('home');
     setShowBreak(false);
     setOpenHour(-1);
     setOpenDay(-1);
     setOpenFish(null);
   };
   const pickSpot = (i: number) => {
-    saved.selectSpot(field, i);
+    saved.selectSpot(i);
     setOpenFish(null);
   };
-  const removeSpot = (i: number) => saved.removeSpot(field, i);
+  const removeSpot = (i: number) => saved.removeSpot(i);
   const pickPlace = (r: GeocodeResult) => {
-    const newSpot = customLocationToSpot({ name: r.name, admin1: r.admin1, admin2: r.admin2, lat: r.lat, lon: r.lon }, field);
-    saved.addSpot(field, newSpot);
+    const newSpot = customLocationToSpot({ name: r.name, admin1: r.admin1, admin2: r.admin2, lat: r.lat, lon: r.lon });
+    saved.addSpot(newSpot);
     setOpenFish(null);
     setSearchOpen(false);
   };
@@ -94,6 +97,12 @@ export default function App() {
       <Header spot={spot} onOpenSearch={() => setSearchOpen(true)} />
       <FieldSwitcher field={field} onPick={pickField} />
 
+      {/* Global, not tab-scoped: the current spot and its quick-switch list should be
+          visible/changeable from 時間ごと・週間・釣れる魚 too, not just ホーム. */}
+      <div style={{ padding: '0 20px 12px', flex: 'none' }}>
+        <SpotPicker spots={spots} active={spotIndex} scores={spotScores} onPick={pickSpot} onRemove={removeSpot} />
+      </div>
+
       {weatherStatus === 'simulated' && (
         <div
           style={{
@@ -110,11 +119,6 @@ export default function App() {
         {tab === 'home' && (
           <HomeTab
             snap={snap}
-            spots={spots}
-            spotScores={spotScores}
-            spotIndex={spotIndex}
-            onPickSpot={pickSpot}
-            onRemoveSpot={removeSpot}
             showBreak={showBreak}
             onToggleBreak={() => setShowBreak((v) => !v)}
             onCycleWindUnit={() => setWindUnit((u) => NEXT_WIND_UNIT[u])}

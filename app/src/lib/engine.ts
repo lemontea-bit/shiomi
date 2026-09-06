@@ -234,9 +234,12 @@ export function buildSnapshot(params: {
   const heroScore = clamp(Math.round(rawScore + spot.baseDelta), 5, 99);
 
   const windSafety = weather.current.windSpeed > 12 || [95, 96, 99].includes(weather.current.code);
+  // Spots no longer carry authored per-field flavor text (a place isn't "a sea spot" or "a
+  // lake spot" any more — 海/湖/川 is just which lens you're viewing it through), so the
+  // headline is generated from that lens + score, same as the hour/day detail text.
   const headline = windSafety
     ? '強風・荒天の予測です。安全のため釣行は見合わせを検討してください。'
-    : spot.headline;
+    : detailPhrase(field, heroScore);
 
   const factors: FactorRow[] = [
     { label: '水温', value: Math.round(factorsNow.water), note: `${waterTemp.toFixed(1)}℃` },
