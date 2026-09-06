@@ -1,4 +1,5 @@
 import { normalizePrefectureName, PREFECTURE_CITIES } from '../data/prefectureCities';
+import { searchKnownWaters, type KnownWater } from '../data/knownWaters';
 
 export interface GeocodeResult {
   id: number;
@@ -56,4 +57,32 @@ export async function searchCitiesInPrefecture(prefectureName: string, signal?: 
     out.push(match);
   }
   return out;
+}
+
+let knownWaterId = -1;
+function knownWaterToResult(w: KnownWater): GeocodeResult {
+  return { id: knownWaterId--, name: w.name, admin1: w.pref, lat: w.lat, lon: w.lon };
+}
+
+/** The search box's actual entry point: live geocoding plus the small curated lake
+ * supplement above, merged with local matches first (this is a fishing app) and
+ * de-duplicated by coordinate. Falls back to local-only results if the live API is
+ * unreachable, and only surfaces as a hard error when neither has anything. */
+export async function searchPlacesAugmented(query: string, signal?: AbortSignal): Promise<GeocodeResult[]> {
+  const local = searchKnownWaters(query).map(knownWaterToResult);
+  let live: GeocodeResult[] = [];
+  try {
+    live = await searchPlaces(query, signal);
+  } catch (err) {
+    if (local.length === 0) throw err;
+  }
+  const seen = new Set<string>();
+  const merged: GeocodeResult[] = [];
+  for (const r of [...local, ...live]) {
+    const key = `${r.lat.toFixed(2)},${r.lon.toFixed(2)}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    merged.push(r);
+  }
+  return merged;
 }

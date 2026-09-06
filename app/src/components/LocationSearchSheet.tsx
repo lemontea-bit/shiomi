@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { isPrefectureLevel, searchCitiesInPrefecture, searchPlaces, type GeocodeResult } from '../lib/geocode';
+import { isPrefectureLevel, searchCitiesInPrefecture, searchPlacesAugmented, type GeocodeResult } from '../lib/geocode';
 
 export function LocationSearchSheet({ onPick, onClose }: { onPick: (r: GeocodeResult) => void; onClose: () => void }) {
   const [query, setQuery] = useState('');
@@ -27,7 +27,7 @@ export function LocationSearchSheet({ onPick, onClose }: { onPick: (r: GeocodeRe
     const controller = new AbortController();
     const timer = setTimeout(() => {
       setStatus('loading');
-      searchPlaces(q, controller.signal)
+      searchPlacesAugmented(q, controller.signal)
         .then((r) => {
           setResults(r);
           setStatus('idle');
