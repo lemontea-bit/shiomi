@@ -1,0 +1,728 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics><meta name="design_doc_mode" content="canvas">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#0B1418;font-family:'Zen Kaku Gothic New',system-ui,sans-serif}
+a{color:#F2A93B;text-decoration:none}a:hover{color:#FFC77A}
+@keyframes sheetUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+::-webkit-scrollbar{width:0}
+</style></helmet>
+
+<div style="display:flex;gap:56px;align-items:flex-start;padding:56px 60px 80px;min-height:100vh;box-sizing:border-box">
+
+  <div style="display:flex;flex-direction:column;gap:18px;flex:none">
+    <div style="display:flex;align-items:baseline;gap:12px">
+      <div style="font:900 26px/1 'Zen Kaku Gothic New',sans-serif;color:#EAF2F4;letter-spacing:.02em">潮見 — SHIOMI</div>
+      <div style="font:500 12px/1 'JetBrains Mono',monospace;color:#F2A93B;letter-spacing:.12em">v0.1 PROTOTYPE</div>
+    </div>
+    <div style="font:400 13px/1.7 'Zen Kaku Gothic New',sans-serif;color:rgba(234,242,244,.5);max-width:402px">週間予報・現在地の時間別詳細（降水確率／風速）に加え、周辺で釣れる魚とその「釣れる確率」を気象データから自動計算するアプリ。タブ・行・魚カードはすべて操作できます。</div>
+    <x-import component-from-global-scope="IOSDevice" from="./ios-frame.jsx" dark="{{ true }}" hint-size="402px,874px">
+      <div style="height:100%;display:flex;flex-direction:column;background:#0B1418;color:#EAF2F4;position:relative;overflow:hidden">
+
+        <div style="padding:58px 20px 12px;display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex:none">
+          <div style="display:flex;flex-direction:column;gap:5px;min-width:0">
+            <div style="display:flex;align-items:center;gap:7px">
+              <div style="width:7px;height:7px;border-radius:50%;background:#F2A93B;box-shadow:0 0 8px rgba(242,169,59,.8)"></div>
+              <div style="font:700 17px/1.2 'Zen Kaku Gothic New',sans-serif;letter-spacing:.01em">{{ spot.name }}</div>
+            </div>
+            <div style="font:400 11px/1.3 'JetBrains Mono',monospace;color:rgba(234,242,244,.45);letter-spacing:.04em">{{ spot.meta }}</div>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex:none">
+            <div style="font:500 11px/1 'JetBrains Mono',monospace;color:rgba(234,242,244,.4)">9/6 SAT 9:42</div>
+            <div style="font:500 10px/1 'JetBrains Mono',monospace;color:#5FD3C6;letter-spacing:.08em">GPS 更新済</div>
+          </div>
+        </div>
+
+        <div style="flex:none;padding:4px 20px 12px">
+          <div style="display:flex;gap:3px;padding:3px;border-radius:12px;background:rgba(255,255,255,.05);border:1px solid rgba(140,190,200,.12)">
+            <sc-for list="{{ fields }}" as="f" hint-placeholder-count="3">
+              <div onClick="{{ f.pick }}" style="flex:1;cursor:pointer;text-align:center;padding:8px 0;border-radius:9px;background:{{ f.bg }};color:{{ f.fg }};font:700 12px/1 'Zen Kaku Gothic New',sans-serif">{{ f.label }}</div>
+            </sc-for>
+          </div>
+        </div>
+
+        <div style="flex:1;overflow-y:auto;overflow-x:hidden;padding:0 0 14px">
+
+          <sc-if value="{{ isHome }}" hint-placeholder-val="{{ true }}">
+            <div style="padding:6px 20px 0;display:flex;flex-direction:column;gap:14px">
+
+              <div onClick="{{ toggleBreak }}" style="border-radius:20px;padding:18px 18px 16px;background:linear-gradient(160deg,#16303B,#102630 60%,#0E2028);border:1px solid rgba(242,169,59,.22);cursor:pointer;display:flex;flex-direction:column;gap:14px">
+                <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px">
+                  <div style="display:flex;flex-direction:column;gap:2px">
+                    <div style="font:500 11px/1 'JetBrains Mono',monospace;color:rgba(234,242,244,.5);letter-spacing:.14em">釣果期待度</div>
+                    <div style="display:flex;align-items:baseline;gap:8px">
+                      <div style="font:700 62px/1 'JetBrains Mono',monospace;color:#F2A93B;letter-spacing:-.03em">{{ spot.score }}</div>
+                      <div style="font:700 15px/1 'Zen Kaku Gothic New',sans-serif;color:#F2A93B">{{ spot.grade }}</div>
+                    </div>
+                  </div>
+                  <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">
+                    <div style="font:500 10px/1 'JetBrains Mono',monospace;color:rgba(234,242,244,.4);letter-spacing:.1em">{{ spot.tide }}</div>
+                    <div style="font:400 10px/1.4 'Zen Kaku Gothic New',sans-serif;color:rgba(234,242,244,.4);text-align:right">タップで<br>算出根拠</div>
+                  </div>
+                </div>
+                <div style="display:flex;gap:3px;height:8px">
+                  <sc-for list="{{ blocks }}" as="b" hint-placeholder-count="10">
+                    <div style="flex:1;border-radius:2px;background:{{ b.bg }}"></div>
+                  </sc-for>
+                </div>
+                <div style="font:400 12px/1.6 'Zen Kaku Gothic New',sans-serif;color:rgba(234,242,244,.72)">{{ spot.headline }}</div>
+                <sc-if value="{{ showBreak }}" hint-placeholder-val="{{ false }}">
+                  <div style="display:flex;flex-direction:column;gap:9px;padding-top:12px;border-top:1px solid rgba(140,190,200,.14)">
+                    <sc-for list="{{ factors }}" as="f" hint-placeholder-count="5">
+                      <div style="display:flex;align-items:center;gap:10px">
+                        <div style="font:400 11px/1 'Zen Kaku Gothic New',sans-serif;color:rgba(234,242,244,.6);width:52px;flex:none">{{ f.label }}</div>
+                        <div style="flex:1;height:5px;border-radius:99px;background:rgba(255,255,255,.07);overflow:hidden">
+                          <div style="height:100%;border-radius:99px;width:{{ f.pct }};background:{{ f.color }}"></div>
+                        </div>
+                        <div style="font:500 11px/1 'JetBrains Mono',monospace;color:rgba(234,242,244,.75);width:26px;text-align:right;flex:none">{{ f.val }}</div>
+                      </div>
+                    </sc-for>
+                    <div style="font:400 10.5px/1.6 'Zen Kaku Gothic New',sans-serif;color:rgba(234,242,244,.38)">水温・気圧変化・風速・潮汐・濁りの5指標を魚種ごとの適性曲線に当て、重み付け平均でスコア化しています。</div>
+                  </div>
+                </sc-if>
+              </div>
+
+              <div style="display:flex;gap:8px">
+                <sc-for list="{{ spots }}" as="s" hint-placeholder-count="3">
+                  <div onClick="{{ s.pick }}" style="flex:1;cursor:pointer;border-radius:12px;padding:9px 10px;background:{{ s.bg }};border:1px solid {{ s.border }};display:flex;flex-direction:column;gap:4px">
+                    <div style="font:500 11px/1.3 'Zen Kaku Gothic New',sans-serif;color:{{ s.fg }}">{{ s.short }}</div>
+                    <div style="font:700 15px/1 'JetBrains Mono',monospace;color:{{ s.fg }}">{{ s.score }}</div>
+                  </div>
+                </sc-for>
+              </div>
+
+              <div style="border-radius:18px;background:#101F26;border:1px solid rgba(140,190,200,.12);padding:16px 16px 14px;display:flex;flex-direction:column;gap:14px">
+                <div style="display:flex;align-items:center;justify-content:space-between">
+                  <div style="font:700 13px/1 'Zen Kaku Gothic New',sans-serif">現在の天気</div>
+                  <div style="display:flex;align-items:center;gap:8px">
+                    <dc-import name="WxIcon" kind="sun" hint-size="26px,26px" style="width:26px;height:26px"></dc-import>
+                    <div style="font:400 11px/1 'Zen Kaku Gothic New',sans-serif;color:rgba(234,242,244,.55)">晴れ</div>
+                  </div>
+                </div>
+                <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px 10px">
+                  <sc-for list="{{ nowStats }}" as="n" hint-placeholder-count="6">
+                    <div style="display:flex;flex-direction:column;gap:4px;min-width:0">
+                      <div style="font:400 10px/1 'JetBrains Mono',monospace;color:rgba(234,242,244,.42);letter-spacing:.08em">{{ n.label }}</div>
+                      <div style="display:flex;align-items:baseline;gap:3px">
+                        <div style="font:700 20px/1 'JetBrains Mono',monospace;color:#EAF2F4">{{ n.value }}</div>
+                        <div style="font:400 10px/1 'JetBrains Mono',monospace;color:rgba(234,242,244,.45)">{{ n.unit }}</div>
+                      </div>
+                      <div style="font:400 10px/1 'Zen Kaku Gothic New',sans-serif;color:{{ n.noteColor }}">{{ n.note }}</div>
+                    </div>
+                  </sc-for>
+                </div>
+              </div>
+
+              <div style="display:flex;flex-direction:column;gap:9px">
+                <div style="font:700 13px/1 'Zen Kaku Gothic New',sans-serif">次の好条件タイム</div>
+                <div style="display:flex;gap:9px">
+                  <sc-for list="{{ windows }}" as="w" hint-placeholder-count="3">
+                    <div style="flex:1;border-radius:14px;padding:11px 11px 10px;background:{{ w.bg }};border:1px solid {{ w.border }};display:flex;flex-direction:column;gap:6px">
+                      <div style="font:400 9.5px/1 'JetBrains Mono',monospace;color:rgba(234,242,244,.45);letter-spacing:.08em">{{ w.day }}</div>
+                      <div style="font:500 12px/1 'JetBrains Mono',monospace;color:#EAF2F4">{{ w.time }}</div>
+                      <div style="display:flex;align-items:baseline;gap:3px">
+                        <div style="font:700 17px/1 'JetBrains Mono',monospace;color:{{ w.fg }}">{{ w.score }}</div>
+                        <div style="font:400 9.5px/1 'Zen Kaku Gothic New',sans-serif;color:rgba(234,242,244,.45)">{{ w.tag }}</div>
+                      </div>
+                    </div>
+                  </sc-for>
+                </div>
+              </div>
+
+              <div onClick="{{ goWeek }}" style="border-radius:18px;background:#101F26;border:1px solid rgba(140,190,200,.12);padding:14px 14px 12px;cursor:pointer;display:flex;flex-direction:column;gap:12px">
+                <div style="display:flex;align-items:center;justify-content:space-between">
+                  <div style="font:700 13px/1 'Zen Kaku Gothic New',sans-serif">週間</div>
+                  <div style="font:400 11px/1 'Zen Kaku Gothic New',sans-serif;color:#F2A93B">詳しく見る →</div>
+                </div>
+                <div style="display:flex;gap:4px">
+                  <sc-for list="{{ days }}" as="d" hint-placeholder-count="7">
+                    <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:7px">
+                      <div style="font:500 10px/1 'JetBrains Mono',monospace;color:{{ d.dowColor }}">{{ d.dow }}</div>
+                      <dc-import name="WxIcon" kind="{{ d.icon }}" hint-size="22px,22px" style="width:22px;height:22px"></dc-import>
+                      <div style="font:500 10px/1 'JetBrains Mono',monospace;color:rgba(234,242,244,.75)">{{ d.hi }}</div>
+                      <div style="width:22px;height:4px;border-radius:99px;background:{{ d.color }}"></div>
+                      <div style="font:700 10px/1 'JetBrains Mono',monospace;color:{{ d.color }}">{{ d.score }}</div>
+                    </div>
+                  </sc-for>
+                </div>
+              </div>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ isHours }}" hint-placeholder-val="{{ false }}">
+            <div style="padding:6px 20px 0;display:flex;flex-direction:column;gap:14px">
+              <div style="border-radius:18px;background:#101F26;border:1px solid rgba(140,190,200,.12);padding:15px 16px 12px;display:flex;flex-direction:column;gap:10px">
+                <div style="display:flex;align-items:center;justify-content:space-between">
+                  <div style="font:700 13px/1 'Zen Kaku Gothic New',sans-serif">{{ chart.title }} <span style="font:400 11px/1 'Zen Kaku Gothic New',sans-serif;color:rgba(234,242,244,.45)">{{ chart.sub }}</span></div>
+                  <div style="font:400 10px/1 'JetBrains Mono',monospace;color:rgba(234,242,244,.45);letter-spacing:.06em">{{ chart.meta }}</div>
+                </div>
+                <div style="position:relative;height:76px">
+                  <svg viewBox="0 0 340 76" preserveAspectRatio="none" style="position:absolute;inset:0;width:100%;height:100%">
+                    <polyline points="0,44 28,26 56,14 84,10 112,20 140,40 168,58 196,64 224,54 252,34 280,16 308,12 340,22" fill="none" stroke="#5FD3C6" stroke-width="2" stroke-linecap="round"></polyline>
+                    <polyline points="0,44 28,26 56,14 84,10 112,20 140,40 168,58 196,64 224,54 252,34 280,16 308,12 340,22 340,76 0,76" fill="rgba(95,211,198,.10)" stroke="none"></polyline>
+                    <line x1="112" y1="0" x2="112" y2="76" stroke="rgba(242,169,59,.5)" stroke-width="1" stroke-dasharray="3 3"></line>
+                  </svg>
+                  <div style="position:absolute;left:32%;top:0;font:500 9.5px/1 'JetBrains Mono',monospace;color:#F2A93B">NOW</div>
+                </div>
+                <div style="display:flex;justify-content:space-between;font:400 9.5px/1 'JetBrains Mono',monospace;color:rgba(234,242,244,.35)">
+                  <div>00</div><div>06</div><div>12</div><div>18</div><div>24</div>
+                </div>
+              </div>
+
+              <div style="display:flex;align-items:center;justify-content:space-between;padding:0 2px">
+                <div style="font:700 13px/1 'Zen Kaku Gothic New',sans-serif">時間ごとの詳細</div>
+                <div style="font:400 10px/1 'JetBrains Mono',monospace;color:rgba(234,242,244,.38);letter-spacing:.06em">気温 / 降水確率 / 風速 / 釣果</div>
+              </div>
+
+              <div style="display:flex;flex-direction:column;gap:6px">
+                <sc-for list="{{ hours }}" as="h" hint-placeholder-count="8">
+                  <div onClick="{{ h.pick }}" style="cursor:pointer;border-radius:14px;background:{{ h.bg }};border:1px solid {{ h.border }};padding:11px 13px;display:flex;flex-direction:column;gap:9px">
+                    <div style="display:flex;align-items:center;gap:11px">
+                      <div style="font:500 13px/1 'JetBrains Mono',monospace;color:{{ h.timeColor }};width:38px;flex:none">{{ h.time }}</div>
+                      <dc-import name="WxIcon" kind="{{ h.icon }}" hint-size="24px,24px" style="width:24px;height:24px"></dc-import>
+                      <div style="font:700 15px/1 'JetBrains Mono',monospace;color:#EAF2F4;width:38px;flex:none">{{ h.temp }}</div>
+                      <div style="display:flex;align-items:baseline;gap:2px;width:44px;flex:none">
+                        <div style="font:500 12px/1 'JetBrains Mono',monospace;color:{{ h.popColor }}">{{ h.pop }}</div>
+                        <div style="font:400 9px/1 'JetBrains Mono',monospace;color:rgba(234,242,244,.4)">%</div>
+                      </div>
+                      <div style="display:flex;align-items:center;gap:5px;flex:1;min-width:0">
+                        <div style="font:500 11px/1 'JetBrains Mono',monospace;color:rgba(234,242,244,.6)">{{ h.dir }}</div>
+                        <div style="font:500 11px/1 'JetBrains Mono',monospace;color:{{ h.windColor }}">{{ h.wind }}</div>
+                      </div>
+                      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;width:42px;flex:none">
+                        <div style="font:700 13px/1 'JetBrains Mono',monospace;color:{{ h.color }}">{{ h.score }}</div>
+                        <div style="width:42px;height:3px;border-radius:99px;background:rgba(255,255,255,.08)">
+                          <div style="height:100%;border-radius:99px;width:{{ h.pct }};background:{{ h.color }}"></div>
+                        </div>
+                      </div>
+                    </div>
+                    <sc-if value="{{ h.open }}" hint-placeholder-val="{{ false }}">
+                      <div style="display:flex;flex-direction:column;gap:8px;padding-top:9px;border-top:1px solid rgba(140,190,200,.14)">
+                        <div style="font:400 11.5px/1.6 'Zen Kaku Gothic New',sans-serif;color:rgba(234,242,244,.7)">{{ h.detail }}</div>
+                        <div style="display:flex;gap:6px;flex-wrap:wrap">
+                          <sc-for list="{{ h.chips }}" as="c" hint-placeholder-count="3">
+                            <div style="font:500 10px/1 'Zen Kaku Gothic New',sans-serif;color:{{ c.fg }};background:{{ c.bg }};border-radius:99px;padding:6px 9px">{{ c.text }}</div>
+                          </sc-for>
+                        </div>
+                      </div>
+                    </sc-if>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ isWeek }}" hint-placeholder-val="{{ false }}">
+            <div style="padding:6px 20px 0;display:flex;flex-direction:column;gap:10px">
+              <div style="display:flex;align-items:center;justify-content:space-between;padding:0 2px">
+                <div style="font:700 13px/1 'Zen Kaku Gothic New',sans-serif">週間予報</div>
+                <div style="font:400 10px/1 'JetBrains Mono',monospace;color:rgba(234,242,244,.38);letter-spacing:.06em">タップで好条件ウィンドウ</div>
+              </div>
+              <sc-for list="{{ days }}" as="d" hint-placeholder-count="7">
+                <div onClick="{{ d.pick }}" style="cursor:pointer;border-radius:16px;background:{{ d.bg }};border:1px solid {{ d.border }};padding:13px 14px;display:flex;flex-direction:column;gap:11px">
+                  <div style="display:flex;align-items:center;gap:12px">
+                    <div style="display:flex;flex-direction:column;gap:2px;width:46px;flex:none">
+                      <div style="font:700 13px/1 'JetBrains Mono',monospace;color:#EAF2F4">{{ d.date }}</div>
+                      <div style="font:500 10px/1 'JetBrains Mono',monospace;color:{{ d.dowColor }}">{{ d.dow }}</div>
+                    </div>
+                    <dc-import name="WxIcon" kind="{{ d.icon }}" hint-size="28px,28px" style="width:28px;height:28px"></dc-import>
+                    <div style="display:flex;align-items:baseline;gap:5px;width:70px;flex:none">
+                      <div style="font:700 16px/1 'JetBrains Mono',monospace;color:#EAF2F4">{{ d.hi }}</div>
+                      <div style="font:500 12px/1 'JetBrains Mono',monospace;color:rgba(234,242,244,.45)">{{ d.lo }}</div>
+                    </div>
+                    <div style="display:flex;flex-direction:column;gap:3px;flex:1;min-width:0">
+                      <div style="font:500 10.5px/1 'JetBrains Mono',monospace;color:{{ d.popColor }}">{{ d.pop }}% / {{ d.wind }}</div>
+                      <div style="font:400 10px/1 'Zen Kaku Gothic New',sans-serif;color:rgba(234,242,244,.4)">{{ d.tide }}</div>
+                    </div>
+                    <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex:none">
+                      <div style="font:700 18px/1 'JetBrains Mono',monospace;color:{{ d.color }}">{{ d.score }}</div>
+                      <div style="width:46px;height:4px;border-radius:99px;background:rgba(255,255,255,.08)">
+                        <div style="height:100%;border-radius:99px;width:{{ d.pct }};background:{{ d.color }}"></div>
+                      </div>
+                    </div>
+                  </div>
+                  <sc-if value="{{ d.open }}" hint-placeholder-val="{{ false }}">
+                    <div style="display:flex;flex-direction:column;gap:9px;padding-top:10px;border-top:1px solid rgba(140,190,200,.14)">
+                      <div style="display:flex;gap:8px">
+                        <div style="flex:1;border-radius:12px;background:rgba(242,169,59,.1);padding:9px 10px;display:flex;flex-direction:column;gap:4px">
+                          <div style="font:400 9.5px/1 'JetBrains Mono',monospace;color:rgba(242,169,59,.8);letter-spacing:.08em">BEST WINDOW</div>
+                          <div style="font:500 12px/1 'JetBrains Mono',monospace;color:#F2A93B">{{ d.best }}</div>
+                        </div>
+                        <div style="flex:1;border-radius:12px;background:rgba(95,211,198,.08);padding:9px 10px;display:flex;flex-direction:column;gap:4px">
+                          <div style="font:400 9.5px/1 'JetBrains Mono',monospace;color:rgba(95,211,198,.8);letter-spacing:.08em">狙える魚</div>
+                          <div style="font:500 11.5px/1.3 'Zen Kaku Gothic New',sans-serif;color:#5FD3C6">{{ d.fish }}</div>
+                        </div>
+                      </div>
+                      <div style="font:400 11.5px/1.6 'Zen Kaku Gothic New',sans-serif;color:rgba(234,242,244,.62)">{{ d.note }}</div>
+                    </div>
+                  </sc-if>
+                </div>
+              </sc-for>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ isFish }}" hint-placeholder-val="{{ false }}">
+            <div style="padding:6px 20px 0;display:flex;flex-direction:column;gap:12px">
+              <div style="border-radius:16px;background:linear-gradient(150deg,#16303B,#0F2028);border:1px solid rgba(95,211,198,.18);padding:13px 15px;display:flex;align-items:center;justify-content:space-between;gap:10px">
+                <div style="display:flex;flex-direction:column;gap:3px">
+                  <div style="font:400 10px/1 'JetBrains Mono',monospace;color:rgba(234,242,244,.45);letter-spacing:.1em">{{ area }}</div>
+                  <div style="font:700 12.5px/1 'Zen Kaku Gothic New',sans-serif;color:#EAF2F4">{{ cond }}</div>
+                </div>
+                <div style="text-align:right">
+                  <div style="font:700 20px/1 'JetBrains Mono',monospace;color:#5FD3C6">{{ fishCount }}</div>
+                  <div style="font:400 9.5px/1.4 'Zen Kaku Gothic New',sans-serif;color:rgba(234,242,244,.45)">魚種</div>
+                </div>
+              </div>
+              <div style="font:400 10px/1 'JetBrains Mono',monospace;color:rgba(234,242,244,.38);letter-spacing:.06em;padding:0 2px">釣れる確率（自動計算）— タップで詳細</div>
+              <sc-for list="{{ fishes }}" as="f" hint-placeholder-count="7">
+                <div onClick="{{ f.open }}" style="cursor:pointer;border-radius:16px;background:#101F26;border:1px solid rgba(140,190,200,.12);padding:13px 14px;display:flex;align-items:center;gap:13px">
+                  <div style="width:44px;height:44px;border-radius:12px;background:{{ f.tint }};display:flex;align-items:center;justify-content:center;flex:none">
+                    <div style="width:18px;height:18px;background:{{ f.color }};transform:rotate(45deg);border-radius:3px;opacity:.9"></div>
+                  </div>
+                  <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:6px">
+                    <div style="display:flex;align-items:baseline;gap:7px">
+                      <div style="font:700 15px/1 'Zen Kaku Gothic New',sans-serif;color:#EAF2F4">{{ f.name }}</div>
+                      <div style="font:400 10px/1 'JetBrains Mono',monospace;color:rgba(234,242,244,.4)">{{ f.en }}</div>
+                    </div>
+                    <div style="display:flex;gap:5px;flex-wrap:wrap">
+                      <sc-for list="{{ f.chips }}" as="c" hint-placeholder-count="3">
+                        <div style="font:500 9.5px/1 'Zen Kaku Gothic New',sans-serif;color:rgba(234,242,244,.6);background:rgba(255,255,255,.05);border-radius:99px;padding:5px 8px">{{ c }}</div>
+                      </sc-for>
+                    </div>
+                    <div style="height:4px;border-radius:99px;background:rgba(255,255,255,.07)">
+                      <div style="height:100%;border-radius:99px;width:{{ f.pct }};background:{{ f.color }}"></div>
+                    </div>
+                  </div>
+                  <div style="display:flex;flex-direction:column;align-items:flex-end;flex:none">
+                    <div style="display:flex;align-items:baseline;gap:1px">
+                      <div style="font:700 22px/1 'JetBrains Mono',monospace;color:{{ f.color }}">{{ f.prob }}</div>
+                      <div style="font:400 11px/1 'JetBrains Mono',monospace;color:{{ f.color }}">%</div>
+                    </div>
+                    <div style="font:500 9.5px/1.6 'Zen Kaku Gothic New',sans-serif;color:rgba(234,242,244,.42)">{{ f.trend }}</div>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+          </sc-if>
+        </div>
+
+        <div style="flex:none;display:flex;padding:6px 8px 30px;background:rgba(11,20,24,.92);border-top:1px solid rgba(140,190,200,.12);backdrop-filter:blur(12px)">
+          <sc-for list="{{ tabs }}" as="t" hint-placeholder-count="4">
+            <div onClick="{{ t.pick }}" style="flex:1;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:6px;padding:8px 0 4px">
+              <div style="width:20px;height:20px;display:flex;align-items:center;justify-content:center">
+                <div style="width:{{ t.w }};height:{{ t.h }};border-radius:{{ t.r }};background:{{ t.color }};transform:rotate({{ t.rot }})"></div>
+              </div>
+              <div style="font:500 10px/1 'Zen Kaku Gothic New',sans-serif;color:{{ t.color }}">{{ t.label }}</div>
+            </div>
+          </sc-for>
+        </div>
+
+        <sc-if value="{{ sheet }}" hint-placeholder-val="{{ false }}">
+          <div style="position:absolute;inset:0;z-index:80;display:flex;flex-direction:column;justify-content:flex-end">
+            <div onClick="{{ closeSheet }}" style="position:absolute;inset:0;background:rgba(4,10,12,.66);animation:fadeIn .18s ease-out"></div>
+            <div style="position:relative;border-radius:26px 26px 0 0;background:#0F1F26;border-top:1px solid rgba(140,190,200,.18);padding:12px 20px 40px;max-height:86%;overflow-y:auto;animation:sheetUp .26s cubic-bezier(.2,.9,.25,1)">
+              <div style="display:flex;justify-content:center;padding-bottom:14px">
+                <div style="width:44px;height:4px;border-radius:99px;background:rgba(255,255,255,.22)"></div>
+              </div>
+              <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding-bottom:16px">
+                <div style="display:flex;flex-direction:column;gap:5px">
+                  <div style="font:900 24px/1.1 'Zen Kaku Gothic New',sans-serif;color:#EAF2F4">{{ sheet.name }}</div>
+                  <div style="font:400 10.5px/1 'JetBrains Mono',monospace;color:rgba(234,242,244,.45);letter-spacing:.06em">{{ sheet.en }}・{{ sheet.size }}</div>
+                </div>
+                <div style="text-align:right">
+                  <div style="display:flex;align-items:baseline;gap:1px;justify-content:flex-end">
+                    <div style="font:700 34px/1 'JetBrains Mono',monospace;color:{{ sheet.color }}">{{ sheet.prob }}</div>
+                    <div style="font:400 14px/1 'JetBrains Mono',monospace;color:{{ sheet.color }}">%</div>
+                  </div>
+                  <div style="font:400 10px/1.6 'Zen Kaku Gothic New',sans-serif;color:rgba(234,242,244,.42)">今日 {{ sheet.trend }}</div>
+                </div>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:9px;padding:14px 0;border-top:1px solid rgba(140,190,200,.14)">
+                <div style="font:700 12px/1 'Zen Kaku Gothic New',sans-serif;color:#EAF2F4">確率の内訳</div>
+                <sc-for list="{{ sheet.factors }}" as="f" hint-placeholder-count="5">
+                  <div style="display:flex;align-items:center;gap:10px">
+                    <div style="font:400 11px/1 'Zen Kaku Gothic New',sans-serif;color:rgba(234,242,244,.6);width:60px;flex:none">{{ f.label }}</div>
+                    <div style="flex:1;height:6px;border-radius:99px;background:rgba(255,255,255,.07);overflow:hidden">
+                      <div style="height:100%;border-radius:99px;width:{{ f.pct }};background:{{ f.color }}"></div>
+                    </div>
+                    <div style="font:400 10px/1 'Zen Kaku Gothic New',sans-serif;color:rgba(234,242,244,.5);width:76px;text-align:right;flex:none">{{ f.note }}</div>
+                  </div>
+                </sc-for>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:11px;padding:14px 0;border-top:1px solid rgba(140,190,200,.14)">
+                <div style="display:flex;gap:8px">
+                  <div style="flex:1;border-radius:12px;background:rgba(242,169,59,.1);padding:10px 11px;display:flex;flex-direction:column;gap:4px">
+                    <div style="font:400 9.5px/1 'JetBrains Mono',monospace;color:rgba(242,169,59,.85);letter-spacing:.08em">ベストタイム</div>
+                    <div style="font:500 12px/1.3 'JetBrains Mono',monospace;color:#F2A93B">{{ sheet.best }}</div>
+                  </div>
+                  <div style="flex:1;border-radius:12px;background:rgba(95,211,198,.08);padding:10px 11px;display:flex;flex-direction:column;gap:4px">
+                    <div style="font:400 9.5px/1 'JetBrains Mono',monospace;color:rgba(95,211,198,.85);letter-spacing:.08em">ポイント</div>
+                    <div style="font:500 11.5px/1.3 'Zen Kaku Gothic New',sans-serif;color:#5FD3C6">{{ sheet.where }}</div>
+                  </div>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:6px">
+                  <div style="font:700 12px/1 'Zen Kaku Gothic New',sans-serif;color:#EAF2F4">釣り方</div>
+                  <div style="font:400 12px/1.75 'Zen Kaku Gothic New',sans-serif;color:rgba(234,242,244,.68)">{{ sheet.how }}</div>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:6px">
+                  <div style="font:700 12px/1 'Zen Kaku Gothic New',sans-serif;color:#EAF2F4">タックル</div>
+                  <div style="display:flex;gap:6px;flex-wrap:wrap">
+                    <sc-for list="{{ sheet.tackle }}" as="t" hint-placeholder-count="3">
+                      <div style="font:500 10.5px/1 'Zen Kaku Gothic New',sans-serif;color:rgba(234,242,244,.7);background:rgba(255,255,255,.06);border:1px solid rgba(140,190,200,.14);border-radius:99px;padding:7px 10px">{{ t }}</div>
+                    </sc-for>
+                  </div>
+                </div>
+              </div>
+              <div onClick="{{ closeSheet }}" style="cursor:pointer;margin-top:6px;border-radius:14px;background:#F2A93B;padding:14px;text-align:center;font:700 13px/1 'Zen Kaku Gothic New',sans-serif;color:#0B1418">閉じる</div>
+            </div>
+          </div>
+        </sc-if>
+      </div>
+    </x-import>
+  </div>
+
+  <div style="display:flex;flex-direction:column;gap:22px;max-width:360px;padding-top:8px">
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <div style="font:500 10px/1 'JetBrains Mono',monospace;color:#F2A93B;letter-spacing:.14em">前提</div>
+      <div style="font:400 12.5px/1.8 'Zen Kaku Gothic New',sans-serif;color:rgba(234,242,244,.6)">海（堤防・サーフ）／湖／川の3フィールドに対応。位置情報から地点を自動判定し、気象＋水況（潮汐・水位・流量）を1つのスコアに束ねるのが中心価値。データはすべてサンプルです。</div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <div style="font:500 10px/1 'JetBrains Mono',monospace;color:#F2A93B;letter-spacing:.14em">設計方針</div>
+      <div style="font:400 12.5px/1.8 'Zen Kaku Gothic New',sans-serif;color:rgba(234,242,244,.6)">・数字は等幅で桁を揃え、拾い読みできる密度に<br>・スコアは常に「根拠」とセットで開示（信頼のため）<br>・時間軸は潮位カーブと同じ横軸に揃える<br>・暗所での視認性を前提にした潮風ダーク</div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <div style="font:500 10px/1 'JetBrains Mono',monospace;color:#5FD3C6;letter-spacing:.14em">操作できるところ（Takuya 反映：海／湖／川）</div>
+      <div style="font:400 12.5px/1.8 'Zen Kaku Gothic New',sans-serif;color:rgba(234,242,244,.6)">上部の海／湖／川セグメント（地点・魚種・指標・グラフが丸ごと切替）／下部4タブ／スコアカードをタップで算出根拠／地点3つの切替／時間行タップで詳細／週間の日をタップで好条件ウィンドウ／魚カードで詳細シート</div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <div style="font:500 10px/1 'JetBrains Mono',monospace;color:rgba(234,242,244,.4);letter-spacing:.14em">次にできること</div>
+      <div style="font:400 12.5px/1.8 'Zen Kaku Gothic New',sans-serif;color:rgba(234,242,244,.45)">釣果マップ／釣行プラン提案／好条件アラートの通知設計／釣果記録からのスコア学習／ライトモード</div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;windUnit&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;m/s&quot;,&quot;kt&quot;,&quot;km/h&quot;],&quot;default&quot;:&quot;m/s&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;表示単位&quot;}}">
+const AMBER = '#F2A93B', TEAL = '#5FD3C6', DIM = '#7E96A3', INK = '#EAF2F4';
+
+const SPOTS = [
+  { short: '江ノ島', name: '江ノ島・片瀬西浜', meta: '35.30N 139.48E ・ 相模湾', score: 78, grade: '好', tide: '大潮 / 下げ', delta: 0,
+    headline: '朝まづめ 5:20–7:00 が本命。南寄りの風が上がる正午以降は失速します。' },
+  { short: '城ヶ島', name: '三浦・城ヶ島', meta: '35.13N 139.61E ・ 相模灘', score: 71, grade: '良', tide: '大潮 / 下げ', delta: -6,
+    headline: '潮通しは良好。うねり 1.2m で足場によっては注意が必要です。' },
+  { short: '大黒', name: '横浜・大黒海づり', meta: '35.46N 139.68E ・ 東京湾', score: 64, grade: '並', tide: '大潮 / 上げ', delta: -12,
+    headline: '濁りが強め。上げ潮の 14:00 前後に短時間の食いが期待できます。' },
+];
+
+const HOURS = [
+  ['05:00','pcloud',22,10,2.1,'NE',82],['06:00','sun',23,10,2.4,'NE',88],['07:00','sun',24,0,2.8,'NE',76],
+  ['08:00','sun',26,0,3.2,'E',64],['09:00','sun',27,0,3.6,'E',55],['10:00','pcloud',28,10,4.1,'SE',48],
+  ['11:00','pcloud',29,20,4.6,'S',42],['12:00','cloud',29,30,5.2,'S',38],['13:00','cloud',30,40,5.8,'S',35],
+  ['14:00','rain',29,60,6.1,'S',30],['15:00','rain',28,70,5.4,'SW',34],['16:00','cloud',27,40,4.5,'SW',46],
+  ['17:00','pcloud',26,20,3.8,'W',62],['18:00','pcloud',25,10,3.1,'W',79],['19:00','cloud',24,10,2.6,'NW',84],
+  ['20:00','cloud',23,10,2.2,'NW',71],['21:00','cloud',23,10,2.0,'N',58],['22:00','cloud',22,10,1.8,'N',52],
+];
+
+const DAYS = [
+  ['9/6','SAT','pcloud',30,23,40,5.2,'大潮',78,'05:20–07:00','カサゴ・シロギス・アジ','下げ潮と朝まづめが重なる今週の本命日。日中は南風でベイトが散ります。'],
+  ['9/7','SUN','rain',27,22,80,7.4,'中潮',41,'04:50–06:10','クロダイ・カサゴ','前線通過。雨で濁りが入るのでクロダイには好都合ですが、風速7m超は安全に注意。'],
+  ['9/8','MON','cloud',28,22,30,4.6,'中潮',62,'17:30–19:00','アジ・カサゴ','雨後の回復日。夕まづめに水温が戻り、常夜灯周りが有望です。'],
+  ['9/9','TUE','sun',30,24,0,3.2,'小潮',71,'05:10–06:40','シロギス・ヒラメ','高気圧が安定。潮が緩いので広く探るサーチ系の釣りが向きます。'],
+  ['9/10','WED','sun',31,25,10,2.8,'小潮',66,'05:15–06:30','シロギス・アオリイカ','高水温で日中は厳しめ。朝の短時間勝負がおすすめです。'],
+  ['9/11','THU','pcloud',29,24,20,3.9,'長潮',74,'17:40–19:20','アオリイカ・タチウオ','気圧が下降に転じ、夕方の活性が上がる予測。'],
+  ['9/12','FRI','storm',26,22,90,9.1,'若潮',22,'見合わせ推奨','—','低気圧接近。波高2.5m予想、釣行は見合わせを推奨します。'],
+];
+
+const FISH = [
+  { name:'カサゴ', en:'Marbled rockfish', prob:84, size:'18–28cm', trend:'↑ 上昇', chips:['岩礁帯','朝夕まづめ','水温適合 ◎'],
+    best:'17:40–19:10', where:'テトラ帯の穴・敷石の際',
+    how:'ブラクリまたは軽量ジグヘッドで根の際をタイトに。着底後2〜3回誘って移動、を手数多く繰り返します。',
+    tackle:['7ft ライトロッド','PE0.6号','ジグヘッド 5g','青イソメ'],
+    factors:[['水温',92,'24.8℃ 適域'],['潮汐',86,'下げ潮 中盤'],['気圧',74,'1013hPa 安定'],['風',62,'東 3.6m/s'],['濁り',70,'弱 / 好適']] },
+  { name:'シロギス', en:'Japanese whiting', prob:76, size:'15–24cm', trend:'→ 横ばい', chips:['サーフ','日中OK','澄み潮 ◎'],
+    best:'06:00–09:00', where:'砂地の駆け上がり 40–60m先',
+    how:'天秤仕掛けの投げ釣り、またはキス用ジグヘッドでズルズル引き。当たりが遠のいたら扇状に投点をずらします。',
+    tackle:['投げ竿 2.7m','ナイロン3号','天秤10号','ジャリメ'],
+    factors:[['水温',80,'やや高め'],['潮汐',72,'下げ潮'],['気圧',78,'安定'],['風',74,'向かい風 弱'],['濁り',84,'澄み / 最適']] },
+  { name:'アジ', en:'Japanese jack mackerel', prob:71, size:'15–22cm', trend:'↑ 上昇', chips:['常夜灯','夜間','群れ回遊中'],
+    best:'19:00–21:30', where:'漁港内の常夜灯・明暗の境',
+    how:'1g前後のジグヘッド＋ワームでレンジを刻む。表層で反応がなければ5カウントずつ落として棚を探ります。',
+    tackle:['アジングロッド 6ft','エステル0.3号','ジグヘッド 1g','ワーム 2in'],
+    factors:[['水温',76,'適域'],['潮汐',80,'下げ潮 好'],['気圧',70,'安定'],['風',58,'やや強め'],['濁り',66,'弱']] },
+  { name:'クロダイ', en:'Blackhead seabream', prob:63, size:'25–45cm', trend:'→ 横ばい', chips:['堤防際','濁り歓迎','高水温 ◎'],
+    best:'05:20–07:00', where:'ケーソンの継ぎ目・スリット',
+    how:'落とし込みでイガイやカニを壁際に沈める。ラインの走りで見えないアタリを取ります。',
+    tackle:['落とし込み竿 3.6m','ナイロン2.5号','ガン玉','イガイ'],
+    factors:[['水温',88,'好適'],['潮汐',66,'下げ潮'],['気圧',64,'やや低下'],['風',56,'南 やや強'],['濁り',52,'もう少し欲しい']] },
+  { name:'ヒラメ', en:'Olive flounder', prob:52, size:'30–55cm', trend:'↓ 低下', chips:['サーフ','高水温で低調','朝夕'],
+    best:'05:00–06:30', where:'離岸流の払い出し',
+    how:'ミノーとジグヘッド＋ワームを交互に。ボトムを取り直しながらスローに巻きます。',
+    tackle:['サーフロッド 10ft','PE1.0号','ジグ 30g'],
+    factors:[['水温',44,'高すぎ'],['潮汐',70,'下げ潮'],['気圧',72,'安定'],['風',60,'横風'],['濁り',58,'弱']] },
+  { name:'アオリイカ', en:'Bigfin reef squid', prob:44, size:'胴 12–18cm', trend:'↑ 上昇', chips:['藻場','秋の新子','夕方'],
+    best:'17:30–19:00', where:'藻場と砂地の境',
+    how:'2.5号エギで2段シャクリ。フォール中に抱くので、テンションを一定に保ちます。',
+    tackle:['エギングロッド 8ft','PE0.6号','エギ 2.5号'],
+    factors:[['水温',72,'適域'],['潮汐',58,'緩い'],['気圧',62,'安定'],['風',50,'やや強'],['濁り',40,'澄み過ぎ']] },
+  { name:'タチウオ', en:'Largehead hairtail', prob:38, size:'指 2–3本', trend:'↓ 低下', chips:['夜間','回遊待ち','要 常夜灯'],
+    best:'19:30–21:00', where:'船道・深場に面した先端',
+    how:'ワインド釣法かキビナゴのウキ釣り。回遊があるまで待ちの釣りになります。',
+    tackle:['9ft ロッド','PE1.0号','ワインド 21g','ワイヤー'],
+    factors:[['水温',54,'まだ高い'],['潮汐',48,'緩い'],['気圧',60,'安定'],['風',44,'南 強め'],['濁り',36,'澄み']] },
+];
+
+const LAKE_SPOTS = [
+  { short: '芦ノ湖', name: '芦ノ湖・湖尻ワンド', meta: '35.21N 139.01E ・ 標高 723m', score: 72, grade: '良', tide: '満水 / 無風', delta: 0,
+    headline: 'ベタ凪で表層は静か。倒木周りの朝一と、風が吹き始める10時前後が勝負。' },
+  { short: '河口湖', name: '河口湖・大石ワンド', meta: '35.52N 138.75E ・ 標高 833m', score: 66, grade: '並', tide: '減水 -0.4m / 弱風', delta: -6,
+    headline: '減水でウィードが薄く、魚はブレイクに落ちています。深めを狙うのが得策。' },
+  { short: '山中湖', name: '山中湖・平野沖', meta: '35.42N 138.87E ・ 標高 981m', score: 58, grade: '並', tide: '満水 / 南西風', delta: -14,
+    headline: '水温が低めで活性は控えめ。日射で温まる午後に一時的なチャンス。' },
+];
+
+const RIVER_SPOTS = [
+  { short: '相模川', name: '相模川・磯部堰下', meta: '35.50N 139.36E ・ 中流域', score: 68, grade: '良', tide: '平水 / 18.4m³/s', delta: 0,
+    headline: 'ささ濁りで条件は上向き。堰下の流れ込みが朝夕ともに有望です。' },
+  { short: '酒匂川', name: '酒匂川・飯泉取水堰', meta: '35.30N 139.16E ・ 中流域', score: 62, grade: '並', tide: '平水 / 12.1m³/s', delta: -6,
+    headline: '澄み気味で見切られやすい状況。ライトなラインと小さめの餌が有効。' },
+  { short: '多摩川', name: '多摩川・是政橋', meta: '35.65N 139.49E ・ 下流域', score: 55, grade: '並', tide: '増水 -減 / 24.8m³/s', delta: -13,
+    headline: '前日の雨で流量やや多め。流芯を避け、緩流帯を丁寧に探ってください。' },
+];
+
+const SPOTS_BY_FIELD = { sea: SPOTS, lake: LAKE_SPOTS, river: RIVER_SPOTS };
+
+const LAKE_FISH = [
+  { name:'ブラックバス', en:'Largemouth bass', prob:79, size:'30–45cm', trend:'↑ 上昇', chips:['倒木・ウィード','朝夕','水温適合 ◎'],
+    best:'05:30–07:30', where:'倒木・アシ際のシェード',
+    how:'朝はトップウォーター、日が高くなればネコリグでカバーの際を丁寧に。反応がなければブレイクの縦の変化へ。',
+    tackle:['6.6ft ML ロッド','フロロ 10lb','ネコリグ 2.7g','ペンシルベイト'],
+    factors:[['水温',88,'22.4℃ 適域'],['水位',80,'満水 安定'],['気圧',72,'1013hPa'],['風',66,'南 2.4m/s'],['濁り',70,'ごく弱']] },
+  { name:'ニジマス', en:'Rainbow trout', prob:70, size:'25–40cm', trend:'→ 横ばい', chips:['流入河川','低水温 ◎','放流魚'],
+    best:'06:00–08:30', where:'流入河川の河口・水通しの良い岬',
+    how:'スプーン3〜5gの巻きが基本。表層で出なければカウントダウンして中層をトレースします。',
+    tackle:['6ft L トラウトロッド','ナイロン4lb','スプーン 3.5g'],
+    factors:[['水温',82,'やや高め'],['水位',76,'安定'],['気圧',74,'安定'],['風',70,'弱風'],['濁り',64,'澄み']] },
+  { name:'ワカサギ', en:'Japanese pond smelt', prob:64, size:'8–13cm', trend:'↑ 上昇', chips:['ボート','群れ回遊','日中OK'],
+    best:'08:00–11:00', where:'水深 8–12m のフラット',
+    how:'仕掛けを底まで落として20cmずつ誘い上げ、群れの棚を探します。魚探の反応に素直に合わせて。',
+    tackle:['ワカサギ穂先','PE0.2号','7本針','紅サシ'],
+    factors:[['水温',72,'適域'],['水位',78,'安定'],['気圧',70,'安定'],['風',58,'ボート注意'],['濁り',66,'弱']] },
+  { name:'ブルーギル', en:'Bluegill', prob:58, size:'10–18cm', trend:'→ 横ばい', chips:['桟橋','初心者向け','日中OK'],
+    best:'終日', where:'桟橋・護岸の足元',
+    how:'小さなガン玉と袖針で餌を落とすだけ。数釣りが楽しめる入門ターゲットです。',
+    tackle:['のべ竿 3.6m','ナイロン1号','袖針3号'],
+    factors:[['水温',80,'適域'],['水位',70,'安定'],['気圧',66,'安定'],['風',60,'弱風'],['濁り',56,'澄み']] },
+  { name:'ヒメマス', en:'Kokanee', prob:41, size:'25–35cm', trend:'↓ 低下', chips:['深場','要ボート','低水温 ◎'],
+    best:'05:00–07:00', where:'水深 15–25m の深場',
+    how:'トローリングかドウヅキで深いレンジを引きます。表層水温が高い時期は難易度が上がります。',
+    tackle:['トローリングロッド','PE1.0号','ドジャー'],
+    factors:[['水温',38,'表層 高すぎ'],['水位',72,'安定'],['気圧',64,'安定'],['風',52,'やや強'],['濁り',60,'澄み']] },
+];
+
+const RIVER_FISH = [
+  { name:'オイカワ', en:'Pale chub', prob:81, size:'8–15cm', trend:'↑ 上昇', chips:['瀬','日中OK','数釣り'],
+    best:'09:00–15:00', where:'浅い瀬・流れの筋',
+    how:'毛鉤の流し釣りか、小さな玉ウキで餌を流します。群れを見つければ連続でヒットします。',
+    tackle:['のべ竿 4.5m','ナイロン0.8号','袖針2号','川虫'],
+    factors:[['水温',86,'19.6℃ 適域'],['流量',82,'平水'],['気圧',72,'安定'],['風',74,'弱風'],['濁り',78,'ささ濁り ◎']] },
+  { name:'ニゴイ', en:'Kissing loach', prob:72, size:'30–50cm', trend:'→ 横ばい', chips:['深瀬','引きが強い','濁り歓迎'],
+    best:'06:00–09:00', where:'堰下の深み・流れの当たる岸',
+    how:'ミミズのブッコミか、小型ミノーで流れの筋をトレース。底を切らずに探るのがコツ。',
+    tackle:['万能竿 3.6m','ナイロン2号','中通しオモリ','ミミズ'],
+    factors:[['水温',80,'適域'],['流量',78,'平水'],['気圧',70,'安定'],['風',68,'弱風'],['濁り',82,'好都合']] },
+  { name:'ヤマメ', en:'Cherry salmon', prob:57, size:'18–28cm', trend:'↓ 低下', chips:['上流','低水温 ◎','朝一勝負'],
+    best:'05:00–07:00', where:'落ち込みの白泡の脇',
+    how:'3gスプーンかミノーを上流に投げて流し込む。一級ポイントは一投目が勝負です。',
+    tackle:['5.6ft トラウトロッド','フロロ3lb','ミノー 50mm'],
+    factors:[['水温',52,'やや高い'],['流量',72,'平水'],['気圧',68,'安定'],['風',70,'弱風'],['濁り',58,'ささ濁り']] },
+  { name:'ウグイ', en:'Japanese dace', prob:66, size:'15–30cm', trend:'→ 横ばい', chips:['どこでも','タフ','日中OK'],
+    best:'終日', where:'流れの緩い岸際',
+    how:'練り餌や川虫で足元を探るだけ。条件が悪い日でも高確率で顔を出す魚です。',
+    tackle:['のべ竿 3.6m','ナイロン1号','袖針4号'],
+    factors:[['水温',78,'適域'],['流量',74,'平水'],['気圧',66,'安定'],['風',68,'弱風'],['濁り',70,'弱']] },
+  { name:'ナマズ', en:'Japanese catfish', prob:48, size:'40–60cm', trend:'↑ 上昇', chips:['夜間','増水後 ◎','トップ'],
+    best:'19:00–21:00', where:'橋脚・堰の下・水門周り',
+    how:'夜にトップウォーターを水面で音を立てて引く。バイトから一呼吸置いて合わせます。',
+    tackle:['6.6ft M ロッド','PE2号','ナマズ用トップ'],
+    factors:[['水温',74,'適域'],['流量',66,'やや多い'],['気圧',60,'下降'],['風',64,'弱風'],['濁り',80,'好都合']] },
+];
+
+const FISH_BY_FIELD = { sea: FISH, lake: LAKE_FISH, river: RIVER_FISH };
+
+const FIELD_META = {
+  sea: { label:'海釣り', chartTitle:'潮位', chartSub:'大潮', chartMeta:'満 04:52 / 干 11:20 / 満 17:38',
+    area:'周辺海域 半径 5km', cond:'水温 24.8℃・濁り 弱・下げ潮', factor3:'潮汐', flowChip:'潮',
+    extra:{ label:'WAVE', value:'0.6', unit:'m', note:'周期 6s' }, water:{ label:'SEA T', value:'24.8', note:'平年 +0.9' },
+    phrases:['まづめと潮の動きが重なる時間帯です。', '悪くはないものの、潮止まりに近く手数が必要です。', '風と潮の条件が噛み合わず、活性は低めの予測。'] },
+  lake: { label:'湖', chartTitle:'水位・風波', chartSub:'満水', chartMeta:'水位 +0.12m / 風波 0.2m / 表層 22.4℃',
+    area:'湖内 3エリア', cond:'水温 22.4℃・濁り ごく弱・満水', factor3:'水位', flowChip:'水位',
+    extra:{ label:'風波', value:'0.2', unit:'m', note:'ベタ凪' }, water:{ label:'水温', value:'22.4', note:'表層 / 平年 -0.3' },
+    phrases:['まづめと風の吹き始めが重なる時間帯です。', '悪くはないものの、風が弱くレンジを刻む必要があります。', '風と水温の条件が噛み合わず、活性は低めの予測。'] },
+  river: { label:'川', chartTitle:'水位・流量', chartSub:'平水', chartMeta:'水位 0.68m / 流量 18.4m³/s / 濁度 12',
+    area:'中流域 8km 区間', cond:'水温 19.6℃・ささ濁り・平水', factor3:'流量', flowChip:'流れ',
+    extra:{ label:'流量', value:'18.4', unit:'m³/s', note:'平水' }, water:{ label:'水温', value:'19.6', note:'平年 +0.4' },
+    phrases:['まづめと流れの効き方が噛み合う時間帯です。', '悪くはないものの、流れが緩くポイントを絞る必要があります。', '風と流量の条件が噛み合わず、活性は低めの予測。'] },
+};
+
+const FIELD_DAYS = {
+  sea: null,
+  lake: { tides: ['満水', '満水 / 流入増', '減水 -0.2m', '減水 -0.3m', '減水 -0.4m', '減水 -0.3m', '増水 +0.3m'],
+    notes: [
+      '朝の凪でトップウォーターが効く一日。日中は南風で波立ち、シェード周りが有望です。',
+      '雨で表層が動き、濁りが入るとカバー周りの魚が浮きます。強風時のボートは中止を。',
+      '雨後の回復日。水温がやや下がってブレイクの魚が動き出します。',
+      '高気圧で快晴・ベタ凪。魚は沈むのでボトム中心の組み立てが有効です。',
+      '快晴続きで日中は厳しめ。朝夕の短時間に集中しましょう。',
+      '気圧が下降に転じ、夕方の表層に動きが出る予測です。',
+      '低気圧接近。風速9m超で湖上は危険、出船は見合わせを推奨します。'] },
+  river: { tides: ['平水 18.4m³/s', '増水傾向 26.5', '増水 24.1', '平水 19.8', '平水 17.1', '平水 15.4', '増水 42.0'],
+    notes: [
+      'ささ濁りと平水の好条件。瀬の流れの筋を朝から丁寧に探ってください。',
+      'まとまった雨で増水の恐れ。水位の急変に注意し、増水時は入水しないこと。',
+      '増水後の濁りが残り、ニゴイ・ナマズには好都合な状況です。',
+      '快晴で澄み気味。ライトなラインと小さめの餌に落とすのが得策。',
+      '水温上昇で日中は低調。朝の涼しい時間帯が本命です。',
+      '気圧下降で夕方に活性が上がる予測。堰下の流れ込みが有望です。',
+      '低気圧接近。増水と濁流の危険があるため河川内には立ち入らないでください。'] },
+};
+
+const FIELD_FLOW = { sea:{ a:'下げ', b:'上げ' }, lake:{ a:'安定', b:'安定' }, river:{ a:'平水', b:'平水' } };
+
+const TAB_SHAPES = { home:['13px','13px','4px','0deg'], hours:['15px','15px','50%','0deg'], week:['16px','5px','2px','0deg'], fish:['13px','13px','3px','45deg'] };
+
+class Component extends DCLogic {
+  state = { tab: 'home', field: 'sea', spot: 0, showBreak: false, hour: 1, day: 0, fish: null };
+
+  color(v) { return v >= 70 ? AMBER : v >= 50 ? TEAL : DIM; }
+
+  wind(v) { const u = this.props.windUnit || 'm/s'; if (u === 'kt') return (v * 1.944).toFixed(1) + 'kt'; if (u === 'km/h') return (v * 3.6).toFixed(0) + 'km/h'; return v.toFixed(1) + 'm/s'; }
+
+  renderVals() {
+    const S = this.state, m = FIELD_META[S.field], spotList = SPOTS_BY_FIELD[S.field];
+    const spot = spotList[Math.min(S.spot, spotList.length - 1)], d = spot.delta;
+    const flow = FIELD_FLOW[S.field];
+    const cl = v => Math.max(4, Math.min(97, v));
+    const heroScore = spot.score;
+
+    const blocks = Array.from({ length: 10 }, (_, i) => ({
+      bg: i * 10 < heroScore ? (i < 3 ? 'rgba(242,169,59,.45)' : AMBER) : 'rgba(255,255,255,.07)',
+    }));
+
+    const factors = [['水温', 92], [m.factor3, 84], ['気圧', 76], ['風速', 58], ['濁り', 70]].map(([label, v]) => ({
+      label, val: v, pct: cl(v) + '%', color: this.color(v),
+    }));
+
+    const nowStats = [
+      { label: 'TEMP', value: '27', unit: '℃', note: '体感 29', noteColor: 'rgba(234,242,244,.4)' },
+      { label: 'RAIN', value: '0', unit: '%', note: '無降水', noteColor: 'rgba(234,242,244,.4)' },
+      { label: 'WIND', value: this.wind(3.6).replace(/[a-z\/]+$/i, ''), unit: (this.props.windUnit || 'm/s'), note: '東 / 追い風', noteColor: TEAL },
+      { label: 'PRESS', value: '1013', unit: 'hPa', note: '↗ 上昇 +1.2', noteColor: 'rgba(234,242,244,.4)' },
+      { label: m.extra.label, value: m.extra.value, unit: m.extra.unit, note: m.extra.note, noteColor: TEAL },
+      { label: m.water.label, value: m.water.value, unit: '℃', note: m.water.note, noteColor: AMBER },
+    ];
+
+    const windows = [
+      { day: 'TODAY', time: '05:20–07:00', score: 88 + d, tag: '朝まづめ' },
+      { day: 'TODAY', time: '17:40–19:10', score: 84 + d, tag: '夕まづめ' },
+      { day: 'TOMORROW', time: '04:50–06:10', score: 61 + d, tag: '雨・濁り' },
+    ].map((w, i) => ({
+      ...w, fg: this.color(w.score),
+      bg: i === 0 ? 'rgba(242,169,59,.12)' : '#101F26',
+      border: i === 0 ? 'rgba(242,169,59,.3)' : 'rgba(140,190,200,.12)',
+    }));
+
+    const topFish = FISH_BY_FIELD[S.field].slice().sort((a, b) => b.prob - a.prob).slice(0, 3).map(f => f.name).join('・');
+
+    const hours = HOURS.map((h, i) => {
+      const sc = Math.max(8, h[6] + d), open = S.hour === i;
+      return {
+        time: h[0], icon: h[1], temp: h[2] + '°', pop: h[3], dir: h[5], wind: this.wind(h[4]), score: sc,
+        pct: cl(sc) + '%', color: this.color(sc), open,
+        bg: open ? 'rgba(242,169,59,.09)' : '#101F26',
+        border: open ? 'rgba(242,169,59,.28)' : 'rgba(140,190,200,.1)',
+        timeColor: open ? AMBER : 'rgba(234,242,244,.8)',
+        popColor: h[3] >= 50 ? '#6FA8D6' : 'rgba(234,242,244,.7)',
+        windColor: h[4] >= 5.5 ? '#E97A6B' : 'rgba(234,242,244,.8)',
+        detail: `釣果 ${sc}。水温 ${(parseFloat(m.water.value) + (h[2] - 27) * 0.06).toFixed(1)}℃、${h[5]}の風 ${this.wind(h[4])}、降水確率 ${h[3]}%。${sc >= 70 ? m.phrases[0] : sc >= 50 ? m.phrases[1] : m.phrases[2]}`,
+        chips: [
+          { text: `${m.flowChip} ${h[0] < '11:20' ? flow.a : flow.b}`, fg: TEAL, bg: 'rgba(95,211,198,.1)' },
+          { text: h[4] >= 5.5 ? '風 強い' : '風 穏やか', fg: h[4] >= 5.5 ? '#E97A6B' : 'rgba(234,242,244,.7)', bg: 'rgba(255,255,255,.05)' },
+          { text: sc >= 70 ? '狙い目' : '様子見', fg: sc >= 70 ? AMBER : 'rgba(234,242,244,.55)', bg: sc >= 70 ? 'rgba(242,169,59,.12)' : 'rgba(255,255,255,.05)' },
+        ],
+        pick: () => this.setState({ hour: open ? -1 : i }),
+      };
+    });
+
+    const fd = FIELD_DAYS[S.field];
+    const days = DAYS.map((x, i) => {
+      const sc = Math.max(8, x[8] + d), open = S.day === i;
+      return {
+        date: x[0], dow: x[1], icon: x[2], hi: x[3] + '°', lo: x[4] + '°', pop: x[5], wind: this.wind(x[6]),
+        tide: fd ? fd.tides[i] : x[7], score: sc, pct: cl(sc) + '%', color: this.color(sc), open,
+        best: x[9], note: fd ? fd.notes[i] : x[11],
+        fish: sc <= 25 ? '—' : (S.field === 'sea' ? x[10] : topFish),
+        dowColor: x[1] === 'SUN' ? '#E97A6B' : x[1] === 'SAT' ? '#6FA8D6' : 'rgba(234,242,244,.45)',
+        popColor: x[5] >= 50 ? '#6FA8D6' : 'rgba(234,242,244,.6)',
+        bg: open ? 'rgba(242,169,59,.07)' : '#101F26',
+        border: open ? 'rgba(242,169,59,.26)' : 'rgba(140,190,200,.1)',
+        pick: () => this.setState({ day: open ? -1 : i }),
+      };
+    });
+
+    const fishes = FISH_BY_FIELD[S.field].map((f, i) => {
+      const p = Math.max(6, f.prob + Math.round(d * 0.8)), c = this.color(p);
+      return {
+        ...f, prob: p, pct: cl(p) + '%', color: c,
+        tint: p >= 70 ? 'rgba(242,169,59,.14)' : p >= 50 ? 'rgba(95,211,198,.12)' : 'rgba(255,255,255,.05)',
+        open: () => this.setState({ fish: i }),
+      };
+    }).sort((a, b) => b.prob - a.prob).map((f, i) => ({ ...f, open: () => this.setState({ fish: i }) }));
+
+    let sheet = null;
+    if (S.fish !== null && fishes[S.fish]) {
+      const f = fishes[S.fish];
+      sheet = { ...f, factors: f.factors.map(([label, v, note]) => ({ label, note, pct: cl(v) + '%', color: this.color(v) })) };
+    }
+
+    const tabs = [['home', 'ホーム'], ['hours', '時間ごと'], ['week', '週間'], ['fish', '釣れる魚']].map(([k, label]) => {
+      const sh = TAB_SHAPES[k], on = S.tab === k;
+      return { label, w: sh[0], h: sh[1], r: sh[2], rot: sh[3], color: on ? AMBER : 'rgba(234,242,244,.38)', pick: () => this.setState({ tab: k }) };
+    });
+
+    return {
+      spot: { ...spot, score: heroScore },
+      chart: { title: m.chartTitle, sub: m.chartSub, meta: m.chartMeta },
+      area: m.area, cond: m.cond, fishCount: FISH_BY_FIELD[S.field].length,
+      fields: ['sea', 'lake', 'river'].map(k => ({
+        label: FIELD_META[k].label,
+        fg: S.field === k ? '#0B1418' : 'rgba(234,242,244,.55)',
+        bg: S.field === k ? AMBER : 'transparent',
+        pick: () => this.setState({ field: k, spot: 0, fish: null, hour: 1, day: 0 }),
+      })),
+      spots: spotList.map((s, i) => ({
+        short: s.short, score: s.score, pick: () => this.setState({ spot: i }),
+        bg: i === S.spot ? 'rgba(242,169,59,.12)' : '#101F26',
+        border: i === S.spot ? 'rgba(242,169,59,.3)' : 'rgba(140,190,200,.1)',
+        fg: i === S.spot ? AMBER : 'rgba(234,242,244,.6)',
+      })),
+      blocks, factors, nowStats, windows, hours, days, fishes, sheet, tabs,
+      showBreak: S.showBreak,
+      isHome: S.tab === 'home', isHours: S.tab === 'hours', isWeek: S.tab === 'week', isFish: S.tab === 'fish',
+      toggleBreak: () => this.setState(s => ({ showBreak: !s.showBreak })),
+      goWeek: () => this.setState({ tab: 'week' }),
+      closeSheet: () => this.setState({ fish: null }),
+    };
+  }
+}
+</script>
+</body>
+</html>
