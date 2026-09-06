@@ -11,7 +11,6 @@ export interface Spot {
   lon: number;
   /** Authored per-spot handicap (exposure/access/etc.) — sample flavor, not derived from any API. */
   baseDelta: number;
-  headline: string;
 }
 
 export interface CustomLocation {
