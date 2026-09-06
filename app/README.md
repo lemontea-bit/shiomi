@@ -9,22 +9,22 @@ original prototype this was built from).
 
 - A React + Vite mobile web app (works great installed to the home screen —
   it ships a manifest and the right meta tags for that).
-- Three fields — 海 (sea) / 湖 (lake) / 川 (river), switchable from the
-  segmented control at the top — each its own scoring lens (tide vs. level
-  vs. flow model) and target species list. A spot isn't tied to a field: it's
-  just a place, and switching fields re-scores whichever spot is currently
-  selected under that lens rather than changing the selection.
+- Three fishing types — 海 (sea) / 湖 (lake) / 川 (river), each its own
+  scoring lens (tide vs. level vs. flow model) and target species list — but
+  no segmented toggle for them: it's a property of the spot itself (`kind`),
+  chosen once when you register it, not something you switch independently
+  of location.
 - Four tabs: **ホーム** (today's score + current conditions), **時間ごと**
   (hour-by-hour, 18h out, with a tide/level/flow chart), **週間** (7-day), and
   **釣れる魚** (per-species bite probability with a tackle/technique sheet).
   The current spot and its quick-switch list sit above all four, not just ホーム.
-- One shared, `localStorage`-persisted spot list (seeded with 3 curated
+- One shared, `localStorage`-persisted spot list (seeded with 3 curated sea
   spots) — tap the search bar in the header to search any 都道府県・市区町村・
   地名 in Japan (lib/geocode.ts, Open-Meteo's free geocoding API + a small
-  curated fallback for well-known lakes it tends to miss) and register it, or
-  tap a spot's **×** to remove it. There is deliberately no GPS/geolocation
-  auto-detection — it only ever "worked" for the 3 original Kanagawa-area
-  spots, and searching covers all of Japan.
+  curated fallback for well-known lakes it tends to miss), pick 海/湖/川 for
+  it, and it's registered; tap a spot's **×** to remove it. There is
+  deliberately no GPS/geolocation auto-detection — it only ever "worked" for
+  the 3 original Kanagawa-area spots, and searching covers all of Japan.
 
 ## Live data vs. estimates — read this before trusting a number
 

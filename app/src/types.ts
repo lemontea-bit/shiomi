@@ -11,6 +11,9 @@ export interface Spot {
   lon: number;
   /** Authored per-spot handicap (exposure/access/etc.) — sample flavor, not derived from any API. */
   baseDelta: number;
+  /** Which scoring lens (tide/level/flow model, species list) this place is fished under —
+   * a property of the place itself, chosen once when it's registered. */
+  kind: Field;
 }
 
 export interface CustomLocation {

@@ -1,18 +1,23 @@
 import { useEffect, useRef, useState } from 'react';
+import type { Field } from '../types';
+import { FIELD_META } from '../data/fieldMeta';
 import { isPrefectureLevel, searchCitiesInPrefecture, searchPlacesAugmented, type GeocodeResult } from '../lib/geocode';
 
-export function LocationSearchSheet({ onPick, onClose }: { onPick: (r: GeocodeResult) => void; onClose: () => void }) {
+const KIND_ORDER: Field[] = ['sea', 'lake', 'river'];
+
+export function LocationSearchSheet({ onPick, onClose }: { onPick: (r: GeocodeResult, kind: Field) => void; onClose: () => void }) {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<GeocodeResult[]>([]);
   const [status, setStatus] = useState<'idle' | 'loading' | 'error'>('idle');
   const [drillFrom, setDrillFrom] = useState<GeocodeResult | null>(null);
   const [cities, setCities] = useState<GeocodeResult[]>([]);
   const [cityStatus, setCityStatus] = useState<'idle' | 'loading' | 'error'>('idle');
+  const [pending, setPending] = useState<GeocodeResult | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    if (!drillFrom) inputRef.current?.focus();
-  }, [drillFrom]);
+    if (!drillFrom && !pending) inputRef.current?.focus();
+  }, [drillFrom, pending]);
 
   useEffect(() => {
     const q = query.trim();
@@ -71,8 +76,46 @@ export function LocationSearchSheet({ onPick, onClose }: { onPick: (r: GeocodeRe
       setDrillFrom(r);
       return;
     }
-    onPick(r);
+    setPending(r);
   };
+
+  if (pending) {
+    return (
+      <div style={{ position: 'absolute', inset: 0, zIndex: 90, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end' }}>
+        <div onClick={onClose} style={{ position: 'absolute', inset: 0, background: 'rgba(4,10,12,.66)', animation: 'fadeIn .18s ease-out' }} />
+        <div
+          style={{
+            position: 'relative', borderRadius: '26px 26px 0 0', background: '#FFFBF4', borderTop: '1px solid rgba(43,32,22,.18)',
+            padding: '12px 20px calc(20px + env(safe-area-inset-bottom, 0px))', display: 'flex', flexDirection: 'column', gap: 12,
+            animation: 'sheetUp .26s cubic-bezier(.2,.9,.25,1)',
+          }}
+        >
+          <div style={{ display: 'flex', justifyContent: 'center' }}>
+            <div style={{ width: 44, height: 4, borderRadius: 99, background: 'rgba(43,32,22,.22)' }} />
+          </div>
+          <button onClick={() => setPending(null)} style={{ alignSelf: 'flex-start', cursor: 'pointer', font: "500 12px/1 'Zen Kaku Gothic New',sans-serif", color: 'var(--amber)', padding: '2px 0' }}>
+            ← 戻る
+          </button>
+          <div style={{ font: "900 20px/1.2 'Zen Kaku Gothic New',sans-serif", color: '#2B2016' }}>{pending.name}</div>
+          <div style={{ font: "400 11px/1.5 'Zen Kaku Gothic New',sans-serif", color: 'rgba(43,32,22,.45)' }}>この地点は？（海・湖・川のどれで釣りますか）</div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {KIND_ORDER.map((k) => (
+              <button
+                key={k}
+                onClick={() => onPick(pending, k)}
+                style={{
+                  textAlign: 'left', borderRadius: 12, background: '#FFFBF4', border: '1px solid rgba(43,32,22,.14)', padding: '13px 15px',
+                  font: "700 14px/1 'Zen Kaku Gothic New',sans-serif", color: '#2B2016', cursor: 'pointer',
+                }}
+              >
+                {FIELD_META[k].label}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div style={{ position: 'absolute', inset: 0, zIndex: 90, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end' }}>
@@ -106,7 +149,7 @@ export function LocationSearchSheet({ onPick, onClose }: { onPick: (r: GeocodeRe
                 cities.map((c) => (
                   <button
                     key={c.id}
-                    onClick={() => onPick(c)}
+                    onClick={() => setPending(c)}
                     style={{
                       textAlign: 'left', borderRadius: 12, background: '#FFFBF4', border: '1px solid rgba(43,32,22,.12)', padding: '11px 13px',
                       display: 'flex', flexDirection: 'column', gap: 2, cursor: 'pointer',
@@ -117,7 +160,7 @@ export function LocationSearchSheet({ onPick, onClose }: { onPick: (r: GeocodeRe
                   </button>
                 ))}
               <button
-                onClick={() => onPick(drillFrom)}
+                onClick={() => setPending(drillFrom)}
                 style={{
                   textAlign: 'left', borderRadius: 12, background: 'rgba(43,32,22,.05)', border: '1px dashed rgba(43,32,22,.2)', padding: '11px 13px',
                   font: "500 12.5px/1.4 'Zen Kaku Gothic New',sans-serif", color: 'rgba(43,32,22,.55)', cursor: 'pointer', marginTop: 4,

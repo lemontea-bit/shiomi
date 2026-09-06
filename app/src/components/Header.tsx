@@ -1,4 +1,5 @@
 import type { Spot } from '../types';
+import { FIELD_META } from '../data/fieldMeta';
 import { formatHeaderTime, useClock } from '../lib/clock';
 
 function SearchIcon() {
@@ -29,7 +30,10 @@ export function Header({ spot, onOpenSearch }: { spot: Spot; onOpenSearch: () =>
       >
         <SearchIcon />
         <div style={{ display: 'flex', flexDirection: 'column', gap: 1, minWidth: 0, flex: 1 }}>
-          <div style={{ font: "700 15px/1.3 'Zen Kaku Gothic New',sans-serif", letterSpacing: '.01em', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{spot.name}</div>
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, minWidth: 0 }}>
+            <div style={{ font: "700 15px/1.3 'Zen Kaku Gothic New',sans-serif", letterSpacing: '.01em', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{spot.name}</div>
+            <div style={{ font: "700 9.5px/1 'Zen Kaku Gothic New',sans-serif", color: 'var(--teal)', background: 'rgba(47,133,119,.12)', borderRadius: 99, padding: '3px 7px', flex: 'none' }}>{FIELD_META[spot.kind].label}</div>
+          </div>
           <div style={{ font: "400 10.5px/1.2 'JetBrains Mono',monospace", color: 'rgba(43,32,22,.42)', letterSpacing: '.03em', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{spot.meta}</div>
         </div>
         <div style={{ font: "400 12px/1 'Zen Kaku Gothic New',sans-serif", color: 'rgba(43,32,22,.35)', flex: 'none' }}>検索</div>
