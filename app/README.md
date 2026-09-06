@@ -64,6 +64,30 @@ npm run build    # type-check + production build
 npm run preview  # serve the production build
 ```
 
+## Deployment
+
+Pushing to `main` builds and deploys automatically to GitHub Pages via
+`.github/workflows/deploy-pages.yml`, at:
+
+```
+https://<github-username>.github.io/shiomi/
+```
+
+That's a real hosted origin (unlike a sandboxed Artifact preview), so live
+weather and geolocation work normally there — open it on a phone and use
+"Add to Home Screen" to install it like an app.
+
+The build's `base` path (`vite.config.ts`) is set to `/shiomi/` to match a
+GitHub Pages *project* site (`username.github.io/shiomi/`) — if the repo is
+ever renamed, or moved to a custom domain / a `username.github.io` *user*
+site, update `base` (and `public/manifest.webmanifest`'s `start_url`/`scope`
+stay `.`-relative, so those don't need touching) to match.
+
+The workflow's first run enables Pages automatically
+(`actions/configure-pages` with `enablement: true`); if your organization's
+GitHub settings block that, enable it once manually instead: repo **Settings
+→ Pages → Source: GitHub Actions**, then re-run the workflow.
+
 ## Structure
 
 ```
