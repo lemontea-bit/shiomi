@@ -1,18 +1,20 @@
 :root {
-  --bg: #0b1418;
-  --ink: #eaf2f4;
-  --amber: #f2a93b;
-  --amber-glow: rgba(242, 169, 59, 0.8);
-  --teal: #5fd3c6;
-  --dim: #7e96a3;
-  --card: #101f26;
-  --card-border: rgba(140, 190, 200, 0.12);
-  --sep: rgba(140, 190, 200, 0.14);
-  --danger: #e97a6b;
-  --info: #6fa8d6;
+  /* Early-autumn palette — warm sand/cream ground, persimmon-amber + muted
+   * pine-teal accents, maple-red for warnings. */
+  --bg: #f6eedf;
+  --ink: #2b2016;
+  --amber: #d9822a;
+  --amber-glow: rgba(217, 130, 42, 0.45);
+  --teal: #2f8577;
+  --dim: rgba(43, 32, 22, 0.5);
+  --card: #fffbf4;
+  --card-border: rgba(43, 32, 22, 0.12);
+  --sep: rgba(43, 32, 22, 0.14);
+  --danger: #c4432e;
+  --info: #3e7ca6;
   --font-jp: 'Zen Kaku Gothic New', system-ui, sans-serif;
   --font-mono: 'JetBrains Mono', ui-monospace, monospace;
-  color-scheme: dark;
+  color-scheme: light;
 }
 
 * {
@@ -39,7 +41,7 @@ a {
   text-decoration: none;
 }
 a:hover {
-  color: #ffc77a;
+  color: #f0a85a;
 }
 
 button {
@@ -63,12 +65,12 @@ button {
   body {
     display: flex;
     justify-content: center;
-    background: #060a0c;
+    background: #e6ddc9;
   }
   #root {
     max-width: 460px;
     width: 100%;
-    box-shadow: 0 0 0 1px rgba(140, 190, 200, 0.12), 0 40px 100px rgba(0, 0, 0, 0.55);
+    box-shadow: 0 0 0 1px rgba(43, 32, 22, 0.1), 0 40px 100px rgba(43, 32, 22, 0.25);
   }
 }
 

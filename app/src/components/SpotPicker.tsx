@@ -23,11 +23,11 @@ export function SpotPicker({
               onClick={() => onPick(i)}
               style={{
                 width: '100%', cursor: 'pointer', textAlign: 'left', borderRadius: 12, padding: '9px 10px', display: 'flex', flexDirection: 'column', gap: 4,
-                background: on ? 'rgba(242,169,59,.12)' : '#101F26', border: `1px solid ${on ? 'rgba(242,169,59,.3)' : 'rgba(140,190,200,.1)'}`,
+                background: on ? 'rgba(217,130,42,.12)' : '#FFFBF4', border: `1px solid ${on ? 'rgba(217,130,42,.3)' : 'rgba(43,32,22,.1)'}`,
               }}
             >
-              <div style={{ font: "500 11px/1.3 'Zen Kaku Gothic New',sans-serif", color: on ? 'var(--amber)' : 'rgba(234,242,244,.6)', paddingRight: spots.length > 1 ? 14 : 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{s.short}</div>
-              <div style={{ font: "700 15px/1 'JetBrains Mono',monospace", color: on ? 'var(--amber)' : 'rgba(234,242,244,.6)' }}>{scores[i]}</div>
+              <div style={{ font: "500 11px/1.3 'Zen Kaku Gothic New',sans-serif", color: on ? 'var(--amber)' : 'rgba(43,32,22,.6)', paddingRight: spots.length > 1 ? 14 : 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{s.short}</div>
+              <div style={{ font: "700 15px/1 'JetBrains Mono',monospace", color: on ? 'var(--amber)' : 'rgba(43,32,22,.6)' }}>{scores[i]}</div>
             </button>
             {spots.length > 1 && (
               <button
@@ -39,7 +39,7 @@ export function SpotPicker({
                 style={{
                   position: 'absolute', top: 5, right: 5, width: 18, height: 18, borderRadius: '50%', cursor: 'pointer',
                   display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,.3)',
-                  font: "500 11px/1 'Zen Kaku Gothic New',sans-serif", color: 'rgba(234,242,244,.5)',
+                  font: "500 11px/1 'Zen Kaku Gothic New',sans-serif", color: 'rgba(43,32,22,.5)',
                 }}
               >
                 ×

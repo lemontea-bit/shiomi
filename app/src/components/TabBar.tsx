@@ -10,11 +10,11 @@ const TABS: { key: Tab; label: string }[] = [
 
 export function TabBar({ tab, onPick }: { tab: Tab; onPick: (t: Tab) => void }) {
   return (
-    <div style={{ flex: 'none', display: 'flex', padding: '6px 8px calc(10px + env(safe-area-inset-bottom, 0px))', background: 'rgba(11,20,24,.92)', borderTop: '1px solid rgba(140,190,200,.12)', backdropFilter: 'blur(12px)' }}>
+    <div style={{ flex: 'none', display: 'flex', padding: '6px 8px calc(10px + env(safe-area-inset-bottom, 0px))', background: 'rgba(255,251,244,.92)', borderTop: '1px solid rgba(43,32,22,.12)', backdropFilter: 'blur(12px)' }}>
       {TABS.map((t) => {
         const on = tab === t.key;
         const [w, h, r, rot] = TAB_SHAPES[t.key];
-        const color = on ? 'var(--amber)' : 'rgba(234,242,244,.38)';
+        const color = on ? 'var(--amber)' : 'rgba(43,32,22,.38)';
         return (
           <button
             key={t.key}

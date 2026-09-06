@@ -251,10 +251,10 @@ export function buildSnapshot(params: {
   const extraValue = field === 'river' ? riverFlow(riverBaseFlow(spotSeed), precipTrailFor(allHours, nowIso, 48)).toFixed(1) : field === 'sea' ? waveHeightM(weather.current.windSpeed).toFixed(1) : Math.min(1.2, waveHeightM(weather.current.windSpeed)).toFixed(1);
 
   const nowStats: NowStat[] = [
-    { label: 'TEMP', value: Math.round(weather.current.temp).toString(), unit: '℃', note: `体感 ${Math.round(weather.current.temp + (weather.current.windSpeed > 4 ? -1 : 1))}`, noteColor: 'rgba(234,242,244,.4)' },
-    { label: 'RAIN', value: (weather.hourly[0]?.pop ?? 0).toString(), unit: '%', note: weather.current.precip > 0 ? '降水あり' : (weather.hourly[0]?.pop ?? 0) >= 50 ? '雨の可能性' : '無降水', noteColor: 'rgba(234,242,244,.4)' },
+    { label: 'TEMP', value: Math.round(weather.current.temp).toString(), unit: '℃', note: `体感 ${Math.round(weather.current.temp + (weather.current.windSpeed > 4 ? -1 : 1))}`, noteColor: 'rgba(43,32,22,.4)' },
+    { label: 'RAIN', value: (weather.hourly[0]?.pop ?? 0).toString(), unit: '%', note: weather.current.precip > 0 ? '降水あり' : (weather.hourly[0]?.pop ?? 0) >= 50 ? '雨の可能性' : '無降水', noteColor: 'rgba(43,32,22,.4)' },
     { label: 'WIND', value: windNumber(weather.current.windSpeed, windUnit), unit: windUnit, note: `${degToCompass(weather.current.windDir)} ・ ${windDesc}`, noteColor: weather.current.windSpeed < 5.5 ? 'var(--teal)' : 'var(--danger)' },
-    { label: 'PRESS', value: Math.round(weather.current.pressure).toString(), unit: 'hPa', note: pressTrendNote, noteColor: 'rgba(234,242,244,.4)' },
+    { label: 'PRESS', value: Math.round(weather.current.pressure).toString(), unit: 'hPa', note: pressTrendNote, noteColor: 'rgba(43,32,22,.4)' },
     { label: m.extraLabel, value: extraValue, unit: m.extraUnit, note: field === 'sea' ? '推定' : field === 'lake' ? '推定' : riverFlowLabel(riverBaseFlow(spotSeed), riverBaseFlow(spotSeed)).split(' ')[0], noteColor: 'var(--teal)' },
     { label: m.waterLabel, value: waterTemp.toFixed(1), unit: '℃', note: `平年 ${waterTemp >= m.waterBaseline ? '+' : ''}${(waterTemp - m.waterBaseline).toFixed(1)}`, noteColor: 'var(--amber)' },
   ];
@@ -285,9 +285,9 @@ export function buildSnapshot(params: {
         ? `釣果 ${score}。荒天警戒 — 風 ${windFull(h.windSpeed, windUnit)}、降水確率 ${h.pop}%。安全のため釣行は避けてください。`
         : `釣果 ${score}。水温 ${wt.toFixed(1)}℃、${degToCompass(h.windDir)}の風 ${windFull(h.windSpeed, windUnit)}、降水確率 ${h.pop}%。${detailPhrase(field, score)}`,
       chips: [
-        { text: `${m.flowChip} ${rising ? flow.a : flow.b}`, fg: 'var(--teal)', bg: 'rgba(95,211,198,.1)' },
-        { text: h.windSpeed >= 5.5 ? '風 強い' : '風 穏やか', fg: h.windSpeed >= 5.5 ? 'var(--danger)' : 'rgba(234,242,244,.7)', bg: 'rgba(255,255,255,.05)' },
-        { text: hazard ? '見合わせ' : score >= 70 ? '狙い目' : '様子見', fg: hazard ? 'var(--danger)' : score >= 70 ? 'var(--amber)' : 'rgba(234,242,244,.55)', bg: hazard ? 'rgba(233,122,107,.14)' : score >= 70 ? 'rgba(242,169,59,.12)' : 'rgba(255,255,255,.05)' },
+        { text: `${m.flowChip} ${rising ? flow.a : flow.b}`, fg: 'var(--teal)', bg: 'rgba(47,133,119,.1)' },
+        { text: h.windSpeed >= 5.5 ? '風 強い' : '風 穏やか', fg: h.windSpeed >= 5.5 ? 'var(--danger)' : 'rgba(43,32,22,.7)', bg: 'rgba(43,32,22,.05)' },
+        { text: hazard ? '見合わせ' : score >= 70 ? '狙い目' : '様子見', fg: hazard ? 'var(--danger)' : score >= 70 ? 'var(--amber)' : 'rgba(43,32,22,.55)', bg: hazard ? 'rgba(196,67,46,.14)' : score >= 70 ? 'rgba(217,130,42,.12)' : 'rgba(43,32,22,.05)' },
       ],
     };
   });
@@ -421,7 +421,7 @@ export function adjustFish(field: Field, liveDelta: number): AdjustedFish[] {
   return FISH_BY_FIELD[field]
     .map((f) => {
       const prob = clamp(Math.round(f.prob + liveDelta * 0.5), 4, 97);
-      return { ...f, prob, pct: `${prob}%`, color: scoreColor(prob), tint: prob >= 70 ? 'rgba(242,169,59,.14)' : prob >= 50 ? 'rgba(95,211,198,.12)' : 'rgba(255,255,255,.05)' };
+      return { ...f, prob, pct: `${prob}%`, color: scoreColor(prob), tint: prob >= 70 ? 'rgba(217,130,42,.14)' : prob >= 50 ? 'rgba(47,133,119,.12)' : 'rgba(43,32,22,.05)' };
     })
     .sort((a, b) => b.prob - a.prob);
 }
