@@ -14,6 +14,14 @@ export interface Spot {
   headline: string;
 }
 
+export interface CustomLocation {
+  name: string;
+  admin1?: string;
+  admin2?: string;
+  lat: number;
+  lon: number;
+}
+
 export interface FishFactor {
   label: string;
   value: number; // 0-100

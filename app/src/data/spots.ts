@@ -1,4 +1,4 @@
-import type { Field, Spot } from '../types';
+import type { CustomLocation, Field, Spot } from '../types';
 
 // Ported from the Claude Design prototype (TsuriWeather.dc.html). Names, coordinates and
 // per-spot handicaps ("baseDelta") are authored sample content — the numbers Open-Meteo
@@ -92,3 +92,26 @@ export const SPOTS_BY_FIELD: Record<Field, Spot[]> = {
     },
   ],
 };
+
+const CUSTOM_HEADLINE: Record<Field, string> = {
+  sea: '検索した地点の周辺海況です。潮位・水温・濁りは実測ではなく推定値としてご覧ください。',
+  lake: '検索した地点の湖況です。水位・水温・濁りは実測ではなく推定値としてご覧ください。',
+  river: '検索した地点の川況です。水位・流量・濁りは実測ではなく推定値としてご覧ください。',
+};
+
+/** Turns a searched place (any 都道府県・市区町村, via lib/geocode.ts) into a Spot so it can
+ * slot into the same picker/scoring pipeline as the three curated spots per field. Unlike
+ * those, it carries no authored local knowledge — baseDelta stays neutral (0) and the
+ * headline says plainly that this is a generic estimate for the searched place. */
+export function customLocationToSpot(loc: CustomLocation, field: Field): Spot {
+  const admin = [loc.admin1, loc.admin2].filter(Boolean).join(' ');
+  return {
+    short: loc.name.length > 6 ? `${loc.name.slice(0, 5)}…` : loc.name,
+    name: loc.name,
+    meta: `${loc.lat.toFixed(2)}N ${loc.lon.toFixed(2)}E${admin ? ` ・ ${admin}` : ''}`,
+    lat: loc.lat,
+    lon: loc.lon,
+    baseDelta: 0,
+    headline: CUSTOM_HEADLINE[field],
+  };
+}
